@@ -1,6 +1,7 @@
 import sys
 from process import Process
 from rand48 import Rand48
+from print_sim import p_sim
 
 class Params(object):
     def __init__(self, n, seed, lam, upper_bound, t_cs, alpha, t_slice, rr_add):
@@ -22,10 +23,13 @@ processes = []
 ran = Rand48(params.seed)
 for i in range(params.n):
     processes.append(Process(chr(i + 65), params, ran))
-
+Q = []
 # FCFS
 time = 0
 while(1):
+    #for i in processes:
+    #    print(i)
+    p_sim(time, processes, Q, params, "FCFS")
     break 
     time += 1
 
@@ -35,6 +39,7 @@ for i in range(params.n):
     processes.append(Process(chr(i + 65), params, ran))
 
 # SJF
+Q = []
 time = 0
 while(1):
     print("TODO")
@@ -47,6 +52,7 @@ for i in range(params.n):
     processes.append(Process(chr(i + 65), params, ran))
 
 # SRT
+Q = []
 time = 0
 while(1):
     print("TODO")
@@ -59,6 +65,7 @@ for i in range(params.n):
     processes.append(Process(chr(i + 65), params, ran))
 
 # RR
+Q = []
 time = 0
 while(1):
     print("TODO")
