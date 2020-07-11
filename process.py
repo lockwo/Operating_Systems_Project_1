@@ -1,5 +1,4 @@
-import random
-
+import rand48
 
 class Process(object):
     def __init__(self, name, params):
