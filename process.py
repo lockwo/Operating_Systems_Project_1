@@ -7,6 +7,7 @@ class Process(object):
         self.num_burst = floor(r.drand() * 100 + 1)
         self.burst_time = ceil(r.drand())
         self.IO_burst = ceil(r.drand())
+        self.status = 2 # 0 = running, 1 = ready, 2 = waiting
 
 
     def activation(self, r, lam, ub):
