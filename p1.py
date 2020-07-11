@@ -11,3 +11,39 @@ t_cs = sys.argv[5]
 tau = sys.argv[6]
 t_slice = sys.argv[7]
 rr_add = sys.argv[8]
+
+# FCFS
+time = 0
+while(1):
+
+
+
+
+    time += 1
+
+# SJF
+time = 0
+while(1):
+
+
+
+
+    time += 1
+
+# SRT
+time = 0
+while(1):
+
+
+
+
+    time += 1
+
+# RR
+time = 0
+while(1):
+
+
+
+
+    time += 1
