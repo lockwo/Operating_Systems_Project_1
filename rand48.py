@@ -1,4 +1,4 @@
-# Uncomment the next line if using Python 2.x...
+# From https://stackoverflow.com/questions/7287014/is-there-any-drand48-equivalent-in-python-or-a-wrapper-to-it
 from __future__ import division
 
 class Rand48(object):
