@@ -3,13 +3,11 @@ from __future__ import division
 import math
 
 class Rand48(object):
-    def __init__(self, seed, upperbound):
+    def __init__(self, seed, upper_bound):
         self.n = seed
-        self.upperbound = upperbound
+        self.upperbound = upper_bound
     def seed(self, seed):
         self.n = seed
-    def upperbound(self, upperbound):
-        self.upperbound = upperbound
     def srand(self, seed):
         self.n = (seed << 16) + 0x330e
     def next(self):
