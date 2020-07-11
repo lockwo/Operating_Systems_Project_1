@@ -21,6 +21,7 @@ else:
 
 processes = []
 ran = Rand48(params.seed)
+ran.srand(params.seed)
 for i in range(params.n):
     processes.append(Process(chr(i + 65), params, ran))
 Q = []
@@ -36,6 +37,7 @@ while(1):
 
 processes = []
 ran = Rand48(params.seed)
+ran.srand(params.seed)
 for i in range(params.n):
     processes.append(Process(chr(i + 65), params, ran))
 
@@ -49,6 +51,7 @@ while(1):
 
 processes = []
 ran = Rand48(params.seed)
+ran.srand(params.seed)
 for i in range(params.n):
     processes.append(Process(chr(i + 65), params, ran))
 
@@ -62,6 +65,7 @@ while(1):
 
 processes = []
 ran = Rand48(params.seed)
+ran.srand(params.seed)
 for i in range(params.n):
     processes.append(Process(chr(i + 65), params, ran))
 
