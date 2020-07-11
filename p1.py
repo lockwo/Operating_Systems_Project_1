@@ -1,7 +1,7 @@
 import sys
 from process import Process
 from rand48 import Rand48
-from print_sim import p_sim
+from print_sim import p_sim, end
 
 class Params(object):
     def __init__(self, n, seed, lam, upper_bound, t_cs, alpha, t_slice, rr_add):
@@ -76,3 +76,5 @@ while(1):
     p_sim(time, processes, Q, params, "RR")
     break
     time += 1
+
+end([0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0])
