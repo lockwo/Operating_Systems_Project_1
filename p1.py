@@ -3,13 +3,13 @@ from process import Process
 from rand48 import Rand48
 
 class Params(object):
-    def __init__(self, n, seed, lam, upper_bound, t_cs, tau, t_slice, rr_add):
+    def __init__(self, n, seed, lam, upper_bound, t_cs, alpha, t_slice, rr_add):
         self.n = int(n)
         self.seed = int(seed)
         self.lam = float(lam)
         self.upper_bound = int(upper_bound)
         self.t_cs = int(t_cs)
-        self.tau = int(tau)
+        self.alpha = float(alpha)
         self.t_slice = int(t_slice)
         self.rr_add = rr_add
 
@@ -26,7 +26,7 @@ for i in range(params.n):
 # FCFS
 time = 0
 while(1):
-
+    break 
     time += 1
 
 processes = []
