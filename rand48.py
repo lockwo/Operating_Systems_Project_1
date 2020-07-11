@@ -28,20 +28,8 @@ class Rand48(object):
 
     
 '''
-PROGRAM START
+TESTING
 '''
-# seed = 123123
-# processes = []
-# # Set the seed value in srand48()
-# rng = Rand48(seed)
-# rng.srand(test.n)
-
-# for i in range(params.n):
-#     arrival_time = math.floor(rng.drand())
-    # if arrival_time > params.upper_bound:
-    #     continue
-
-# Testing that rand() works
 upper_bound = 3000
 
 rand = Rand48(123123)
