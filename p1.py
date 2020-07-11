@@ -1,5 +1,6 @@
 import sys
 from process import Process
+from rand48 import Rand48
 
 class Params(object):
     def __init__(self, n, seed, lam, upper_bound, t_cs, tau, t_slice, rr_add):
@@ -18,8 +19,9 @@ else:
     params = Params(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], "END")
 
 processes = []
+ran = Rand48(params.seed)
 for i in range(params.n):
-    processes.append(Process(chr(i + 65), params))
+    processes.append(Process(chr(i + 65), params, ran))
 
 # FCFS
 time = 0
@@ -30,6 +32,11 @@ while(1):
 
     time += 1
 
+processes = []
+ran = Rand48(params.seed)
+for i in range(params.n):
+    processes.append(Process(chr(i + 65), params, ran))
+
 # SJF
 time = 0
 while(1):
@@ -39,6 +46,11 @@ while(1):
 
     time += 1
 
+processes = []
+ran = Rand48(params.seed)
+for i in range(params.n):
+    processes.append(Process(chr(i + 65), params, ran))
+
 # SRT
 time = 0
 while(1):
@@ -47,6 +59,11 @@ while(1):
 
 
     time += 1
+
+processes = []
+ran = Rand48(params.seed)
+for i in range(params.n):
+    processes.append(Process(chr(i + 65), params, ran))
 
 # RR
 time = 0
