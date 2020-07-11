@@ -12,6 +12,7 @@ class Process(object):
             self.burst_time.append(ceil(r.drand() * 100))
             self.IO_burst.append(ceil(r.drand() * 100))
         self.status = 2 # 0 = running, 1 = ready, 2 = waiting
+        self.params = params
 
 
     def activation(self, r, lam, ub):
@@ -20,8 +21,6 @@ class Process(object):
             if test < ub:
                 return int(test)
             
-
-    
     def __str__(self):
         ret = self.name + ", arrival time, " + str(self.arrival_time) + ", CPU bursts, " + str(self.burst_time) + ", I/O bursts, " + str(self.IO_burst) + ", status, " + str(self.status)
         return ret
