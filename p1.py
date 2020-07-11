@@ -26,10 +26,7 @@ for i in range(params.n):
 # FCFS
 time = 0
 while(1):
-
-
-
-
+    
     time += 1
 
 processes = []
@@ -40,10 +37,8 @@ for i in range(params.n):
 # SJF
 time = 0
 while(1):
-
-
-
-
+    print("TODO")
+    break
     time += 1
 
 processes = []
@@ -54,10 +49,8 @@ for i in range(params.n):
 # SRT
 time = 0
 while(1):
-
-
-
-
+    print("TODO")
+    break
     time += 1
 
 processes = []
@@ -68,8 +61,6 @@ for i in range(params.n):
 # RR
 time = 0
 while(1):
-
-
-
-
+    print("TODO")
+    break
     time += 1
