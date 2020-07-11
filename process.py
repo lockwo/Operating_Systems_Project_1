@@ -5,6 +5,7 @@ class Process(object):
         self.name = name
         self.arrival_time = self.activation(r, params.lam, params.upper_bound)
         self.num_burst = floor(r.drand() * 100 + 1)
+        self.current_burst_num = 0
         self.burst_time = []
         self.IO_burst = []
         for i in range(self.num_burst):
