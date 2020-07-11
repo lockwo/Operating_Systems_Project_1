@@ -29,7 +29,7 @@ time = 0
 while(1):
     #for i in processes:
     #    print(i)
-    p_sim()
+    p_sim(time, processes, Q, params, "FCFS")
     break 
     time += 1
 
