@@ -3,9 +3,8 @@ from __future__ import division
 import math
 
 class Rand48(object):
-    def __init__(self, seed, upper_bound):
+    def __init__(self, seed):
         self.n = seed
-        self.upperbound = upper_bound
     def seed(self, seed):
         self.n = seed
     def srand(self, seed):
@@ -22,18 +21,9 @@ class Rand48(object):
         if n & (1 << 31):
             n -= 1 << 32
         return n
-    # Justin Mai garbage -Alan Turing
-    def rand(self, Lambda):
-        while(1):
-            n = (-1) * math.log(self.drand()) / Lambda
-            if (n <= self.upperbound):
-                break   
-        return n
 
 # Testing that rand() works
-upper_bound = 3000
-
-rand = Rand48(123123, 3000)
+rand = Rand48(123123)
 for i in range(10):
-    n = rand.rand(.001)
+    n = rand.drand()
     print(n)
