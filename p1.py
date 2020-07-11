@@ -26,6 +26,8 @@ for i in range(params.n):
 # FCFS
 time = 0
 while(1):
+    #for i in processes:
+    #    print(i)
     break 
     time += 1
 
