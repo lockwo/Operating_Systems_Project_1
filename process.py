@@ -12,7 +12,7 @@ class Process(object):
             self.burst_time.append(ceil(r.drand() * 100))
             self.IO_burst.append(ceil(r.drand() * 100))
         self.status = 2 # 0 = running, 1 = ready, 2 = waiting
-        self.params = params
+        self.tau = 1/params.lam
 
 
     def activation(self, r, lam, ub):
