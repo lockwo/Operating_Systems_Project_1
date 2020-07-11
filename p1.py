@@ -26,9 +26,10 @@ for i in range(params.n):
 Q = []
 # FCFS
 time = 0
+#for i in processes:
+#    print(i)
 while(1):
-    #for i in processes:
-    #    print(i)
+
     p_sim(time, processes, Q, params, "FCFS")
     break 
     time += 1
@@ -42,7 +43,7 @@ for i in range(params.n):
 Q = []
 time = 0
 while(1):
-    print("TODO")
+    p_sim(time, processes, Q, params, "SJF")
     break
     time += 1
 
@@ -55,7 +56,7 @@ for i in range(params.n):
 Q = []
 time = 0
 while(1):
-    print("TODO")
+    p_sim(time, processes, Q, params, "SRT")
     break
     time += 1
 
@@ -68,6 +69,6 @@ for i in range(params.n):
 Q = []
 time = 0
 while(1):
-    print("TODO")
+    p_sim(time, processes, Q, params, "RR")
     break
     time += 1
