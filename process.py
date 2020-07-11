@@ -15,3 +15,8 @@ class Process(object):
             test = -log(r)/lam
             if test < ub:
                 return int(test)
+
+    
+    def __str__(self):
+        ret = self.name + ", arrival time, " + str(self.arrival_time) + ", CPU bursts, " + str(self.burst_time) + ", I/O bursts, " + str(self.IO_burst) + ", status, " + str(self.status)
+        return ret
