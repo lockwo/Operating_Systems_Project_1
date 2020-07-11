@@ -3,10 +3,13 @@ from __future__ import division
 import math
 
 class Rand48(object):
-    def __init__(self, seed):
+    def __init__(self, seed, upperbound):
         self.n = seed
+        self.upperbound = upperbound
     def seed(self, seed):
         self.n = seed
+    def upperbound(self, upperbound):
+        self.upperbound = upperbound
     def srand(self, seed):
         self.n = (seed << 16) + 0x330e
     def next(self):
@@ -23,19 +26,16 @@ class Rand48(object):
         return n
     # Justin Mai garbage -Alan Turing
     def rand(self, Lambda):
-        n = (-1) * math.log(self.drand()) / Lambda
+        while(1):
+            n = (-1) * math.log(self.drand()) / Lambda
+            if (n <= self.upperbound):
+                break   
         return n
 
-    
-'''
-TESTING
-'''
+# Testing that rand() works
 upper_bound = 3000
 
-rand = Rand48(123123)
+rand = Rand48(123123, 3000)
 for i in range(10):
     n = rand.rand(.001)
-    if (n > upper_bound):
-        i -= 1
-        continue
     print(n)
