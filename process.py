@@ -11,4 +11,4 @@ class Process(object):
         while(1):
             test = log(r)/lam
             if test < ub:
-                return test
+                return int(test)
