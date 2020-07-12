@@ -11,6 +11,7 @@ class Process(object):
         for i in range(self.num_burst):
             self.burst_time.append(ceil(r.drand() * 100))
             self.IO_burst.append(ceil(r.drand() * 100))
+        self.IO_burst.pop()
         self.status = 2 # 0 = running, 1 = ready, 2 = waiting
         self.tau = 1/params.lam
 
@@ -22,5 +23,5 @@ class Process(object):
                 return int(test)
             
     def __str__(self):
-        ret = self.name + ", arrival time, " + str(self.arrival_time) + ", CPU bursts, " + str(self.burst_time) + ", I/O bursts, " + str(self.IO_burst) + ", status, " + str(self.status)
+        ret = self.name + ", arrival time, " + str(self.arrival_time) + ", number of bursts, " + str(self.num_burst) + ", CPU bursts, " + str(self.burst_time) + ", I/O bursts, " + str(self.IO_burst) + ", status, " + str(self.status)
         return ret
