@@ -12,14 +12,20 @@ def sjf(time, processes, params):
     # Add all current processes
     for i in range(len(processes)):
         current_burst_num = processes[i].current_burst_num
-        readyQueue[processes[i].burst_time[current_burst_num]] = processes[i] # add into readyQueue by burst_time
+        key = processes[i].burst_time[current_burst_num]
+
+        if key in readyQueue: # adds onto the list
+            readyQueue[key].append(processes[i])
+        else: # makes the list
+            readyQueue[key] = [ processes[i] ]
+
         # we don't need to update the current_burst_num yet
 
     print(readyQueue)
 
 if __name__ == '__main__':
 
-    params = Params("3", "123123", ".001", "3000", "10", "1", "1", "END")
+    params = Params("10", "123123", ".001", "3000", "10", "1", "1", "END")
     processes = []
     ran = Rand48(params.seed)
     ran.srand(params.seed)
