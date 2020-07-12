@@ -6,7 +6,7 @@ from params import Params
 # SJF
 
 def sjf(time, processes, params):
-    # Make the ready queu
+    # Make the ready queue
     readyQueue = dict()
     
     # Add all current processes
@@ -17,12 +17,14 @@ def sjf(time, processes, params):
 
     print(readyQueue)
 
-params = Params("3", "123123", ".001", "3000", "10", "1", "1", "END")
-processes = []
-ran = Rand48(params.seed)
-ran.srand(params.seed)
-for i in range(params.n):
-    processes.append(Process(chr(i + 65), params, ran))
+if __name__ == '__main__':
 
-# did not add params yet
-sjf(0, processes, params)
+    params = Params("3", "123123", ".001", "3000", "10", "1", "1", "END")
+    processes = []
+    ran = Rand48(params.seed)
+    ran.srand(params.seed)
+    for i in range(params.n):
+        processes.append(Process(chr(i + 65), params, ran))
+
+    # did not add params yet
+    sjf(0, processes, params)
