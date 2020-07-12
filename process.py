@@ -6,6 +6,7 @@ class Process(object):
         self.arrival_time = int(self.activation(r, params.lam, params.upper_bound))
         self.num_burst = floor(r.drand() * 100 + 1)
         self.current_burst_num = 0
+        self.blocked_IO = 0 # represents blocked until...
         self.burst_time = []
         self.IO_burst = []
         for i in range(self.num_burst):

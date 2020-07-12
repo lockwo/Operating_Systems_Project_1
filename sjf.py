@@ -12,6 +12,21 @@ def sjf(time, processes, params):
     
     # Add all current processes
     for i in range(len(processes)):
+        # Skip if the process arrival didn't occur yet
+        if time < processes[i].arrival_time:
+            continue
+        # Skip if the process is in the ready queue already
+        if processes[i] in readyQueue.values():
+            continue
+
+        # Skip if done bursting
+        if processes[i].current_burst_num >= processes[i].num_burst:
+            continue
+
+        # Skip if blocked for I/O
+        if processes[i].blocked_IO > time:
+            continue
+
         current_burst_num = processes[i].current_burst_num
         key = processes[i].burst_time[current_burst_num]
 
@@ -21,8 +36,6 @@ def sjf(time, processes, params):
             readyQueue[key] = [ processes[i] ]
 
         # we don't need to update the current_burst_num yet
-
-    print_sim.p_sim(time, processes, readyQueue , params, "SJF")
 
     #print(readyQueue)
 
@@ -34,5 +47,5 @@ if __name__ == '__main__':
     for i in range(params.n):
         processes.append(Process(chr(i + 65), params, ran))
 
-    # did not add params yet
+    print_sim.p_sim(0, processes, [] , params, "SJF")
     sjf(0, processes, params)
