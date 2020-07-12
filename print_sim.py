@@ -10,7 +10,7 @@ def p_sim(time, processes, Q, params, algo):
         if len(Q) == 0:
             print("time 0ms: Simulator started for", algo, "[Q <empty>]")
         else:
-             print("time 0ms: Simulator started for", algo, "[Q", ' '.join([i.name for i in Q]) + "]")
+             print("time 0ms: Simulator started for", algo, "[Q", ' '.join([i.name for i in processes]) + "]")
 
 def end(fcfs, sjf, srt, rr):
     print("Algorithm FCFS")

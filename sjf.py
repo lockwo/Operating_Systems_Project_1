@@ -2,6 +2,7 @@
 from rand48 import Rand48
 from process import Process
 from params import Params
+import print_sim
 
 # SJF
 
@@ -21,11 +22,12 @@ def sjf(time, processes, params):
 
         # we don't need to update the current_burst_num yet
 
-    print(readyQueue)
+    print_sim.p_sim(time, processes, readyQueue , params, "SJF")
+
+    #print(readyQueue)
 
 if __name__ == '__main__':
-
-    params = Params("10", "123123", ".001", "3000", "10", "1", "1", "END")
+    params = Params(n=1, seed=2, lam=0.01, upper_bound=256, t_cs=4, alpha=0.5, t_slice=128, rr_add='END')
     processes = []
     ran = Rand48(params.seed)
     ran.srand(params.seed)
