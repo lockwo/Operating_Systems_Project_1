@@ -1,4 +1,5 @@
 import sys
+from params import Params
 from process import Process
 from rand48 import Rand48
 from print_sim import p_sim, end
