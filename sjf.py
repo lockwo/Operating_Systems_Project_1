@@ -4,12 +4,13 @@ from process import Process
 from params import Params
 import print_sim
 
+
 def getNames(readyQueue, processesInQueue):
     msg = ""
     # combine the values into one list
     for i in readyQueue.values():
         processesInQueue = processesInQueue + i
-    
+
     for i in processesInQueue:
         msg += " " + i.name
 
@@ -17,9 +18,10 @@ def getNames(readyQueue, processesInQueue):
 
     return msg
 
+
 def tiebreaker(processes):
     smallestName = processes.pop(0)
-    while (len(processes) > 0):
+    while len(processes) > 0:
         tmpName = processes.pop(0)
         if smallestName > tmpName:
             smallestName = tmpName
@@ -50,21 +52,29 @@ def addOntoQueue(readyQueue, processes, time):
         if key in readyQueue:
             readyQueue[key].append(processes[i])
         else:
-            readyQueue[key] = [ processes[i] ]
+            readyQueue[key] = [processes[i]]
 
         # Print msg
-        msg = "time " + str(time) + "ms: Process " + processes[i].name + \
-        " arrived; added to the ready queue " + "[Q"
+        msg = (
+            "time "
+            + str(time)
+            + "ms: Process "
+            + processes[i].name
+            + " arrived; added to the ready queue "
+            + "[Q"
+        )
 
         if len(readyQueue) == 0:
-             msg += " <empty>]"
-             print(msg)
+            msg += " <empty>]"
+            print(msg)
         else:
             msg += getNames(readyQueue, [])
             print(msg)
 
+
 # msg = "time " + str(time) + "ms: Process " + processes[i].name + \
-# " started using the CPU for " + str(processes[i].burst_time[current_burst_num]) \
+# " started using the CPU for " + \
+# str(processes[i].burst_time[current_burst_num]) \
 # + "ms burst " + "[Q"
 # time += params.t_cs / 2
 
@@ -85,12 +95,21 @@ def sjf(time, processes, params):
         nextProcess = tiebreaker(readyQueue[smallest])
     else:
         nextProcess = readyQueue[smallest].pop(0)
-    
+
     print(nextProcess)
 
 
-if __name__ == '__main__':
-    params = Params(n=1, seed=2, lam=0.01, upper_bound=256, t_cs=4, alpha=0.5, t_slice=128, rr_add='END')
+if __name__ == "__main__":
+    params = Params(
+        n=1,
+        seed=2,
+        lam=0.01,
+        upper_bound=256,
+        t_cs=4,
+        alpha=0.5,
+        t_slice=128,
+        rr_add="END",
+    )
     processes = []
     ran = Rand48(params.seed)
     ran.srand(params.seed)
@@ -98,5 +117,5 @@ if __name__ == '__main__':
         processes.append(Process(chr(i + 65), params, ran))
 
     time = 9
-    print_sim.p_sim(0, processes, [] , params, "SJF")
+    print_sim.p_sim(0, processes, [], params, "SJF")
     sjf(time, processes, params)
