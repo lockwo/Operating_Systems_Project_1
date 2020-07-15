@@ -23,6 +23,7 @@ class Process(object):
         self.sliced = 0
         self.block_time = -1
         self.tau = 1 / params.lam
+        self.done = False
 
     def activation(self, r, lam, ub):
         while 1:
