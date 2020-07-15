@@ -69,12 +69,12 @@ def addOntoQueue(readyQueue, processes, time):
         
         if processes[i].current_burst_num == 0:
             msg += (
-                " arrived; added to the ready queue "
+                " arrived; added to ready queue "
                 + "[Q"
             )
         else:
             msg += (
-                " completed I/O; added to the ready queue "
+                " completed I/O; added to ready queue "
                 + "[Q"
             )
 
@@ -104,7 +104,7 @@ def usingCPU(readyQueue, time, params, nextProcess):
         + "ms: Process "
         + nextProcess.name
         + " (tau "
-        + str(int(processes[i].tau))
+        + str(int(nextProcess.tau))
         + "ms)"
         + " started using the CPU for "
         + str(nextProcess.burst_time[nextProcess.current_burst_num])
@@ -130,22 +130,23 @@ def finishCPU(readyQueue, time, nextProcess):
         msg = (
             "time "
             + str(int(time))
-            + "msg: Process "
+            + "ms: Process "
             + nextProcess.name
             + " terminated [Q"
         )
     else:
+        bursts = "burst" if nextProcess.num_burst - nextProcess.current_burst_num == 1 else "bursts"
         msg = (
             "time "
             + str(int(time))
             + "ms: Process "
             + nextProcess.name
             + " (tau "
-            + str(int(processes[i].tau))
+            + str(int(nextProcess.tau))
             + "ms)"
             + " completed a CPU burst; "
             + str(nextProcess.num_burst - nextProcess.current_burst_num)
-            + " bursts to go "
+            + f" {bursts} to go "
             + "[Q"
         )
 
@@ -218,6 +219,20 @@ def allDone(processes):
             return False
     return True
 
+def print_start(processes):
+    for i in processes:
+        print(f"Process {i.name} [NEW] (arrival time {i.arrival_time} ms) {i.num_burst} CPU bursts (tau {int(i.tau)}ms)")
+    temp_queue = []
+    for i in sorted(processes, key=lambda x: x.arrival_time):
+        if i.arrival_time == 0:
+            temp_queue.append(i)
+    queue_string = '<empty>' 
+    if temp_queue:
+        queue_string = ' '.join([i.name for i in temp_queue])
+    print(f'time 0ms: Simulator started for SJF [Q {queue_string}]')
+
+
+    
 # Taken from https://stackoverflow.com/questions/33019698/how-to-properly-round-up-half-float-numbers-in-python
 def normal_round(n):
     if n - math.floor(n) < 0.5:
@@ -225,6 +240,7 @@ def normal_round(n):
     return math.ceil(n)
 
 def sjf(processes, params):
+    print_start(processes)
     readyQueue = dict()
     time = 0 # change to 0 later and have loop code set it
     while (not allDone(processes)):
@@ -264,7 +280,7 @@ def sjf(processes, params):
     msg = (
         "time "
         + str(int(time))
-        + "ms: Simulator ends for SJF [Q <empty>]"
+        + "ms: Simulator ended for SJF [Q <empty>]"
     )
     print(msg)
 
