@@ -137,3 +137,5 @@ def round_robin(processes, params, FCFS):
         #if time > 400:
         #    break
     print(f'time {time+1}ms: Simulator ended for RR [Q <empty>]') if not FCFS else print(f'time {time+1}ms: Simulator ended for FCFS [Q <empty>]')
+
+    
