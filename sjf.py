@@ -172,6 +172,7 @@ def finishCPU(readyQueue, time, nextProcess):
             + " terminated [Q"
         )
     else:
+        bursts = "burst" if nextProcess.num_burst - nextProcess.current_burst_num == 1 else "bursts"
         msg = (
             "time "
             + str(int(time))
@@ -294,6 +295,20 @@ def allDone(processes):
             return False
     return True
 
+def print_start(processes):
+    for i in processes:
+        print(f"Process {i.name} [NEW] (arrival time {i.arrival_time} ms) {i.num_burst} CPU bursts (tau {int(i.tau)}ms)")
+    temp_queue = []
+    for i in sorted(processes, key=lambda x: x.arrival_time):
+        if i.arrival_time == 0:
+            temp_queue.append(i)
+    queue_string = '<empty>' 
+    if temp_queue:
+        queue_string = ' '.join([i.name for i in temp_queue])
+    print(f'time 0ms: Simulator started for SJF [Q {queue_string}]')
+
+
+    
 # Taken from https://stackoverflow.com/questions/33019698/how-to-properly-round-up-half-float-numbers-in-python
 def normal_round(n):
     if n - math.floor(n) < 0.5:

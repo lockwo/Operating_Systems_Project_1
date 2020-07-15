@@ -1,40 +1,28 @@
 
-
-def p_sim(time, processes, Q, params, algo):
-    if time == 0:
-        for i in processes:
-            if algo == "FCFS" or algo == "RR":
-                print("Process", i.name, "[NEW] (arrival time", i.arrival_time, "ms)", i.num_burst, "CPU Bursts")
-            if algo == "SJF" or algo == "SRT":
-                print("Process", i.name, "[NEW] (arrival time", i.arrival_time, "ms)", i.num_burst, "CPU Bursts (tau", str(int(i.tau)) + "ms)")
-        if len(Q) == 0:
-            print("time 0ms: Simulator started for", algo, "[Q <empty>]")
-        else:
-             print("time 0ms: Simulator started for", algo, "[Q", ' '.join([i.name for i in processes]) + "]")
-
-def end(fcfs, sjf, srt, rr):
-    print("Algorithm FCFS")
-    print("-- average CPU burst time:", fcfs[0], "ms")
-    print("-- average wait time:", fcfs[1], "ms")
-    print("-- average turnaround time:", fcfs[2], "ms")
-    print("-- total number of context switches:", fcfs[3])
-    print("-- total number of preemptions:", fcfs[4])
-    print("Algorithm SJF")
-    print("-- average CPU burst time:", sjf[0], "ms")
-    print("-- average wait time:", sjf[1], "ms")
-    print("-- average turnaround time:", sjf[2], "ms")
-    print("-- total number of context switches:", sjf[3])
-    print("-- total number of preemptions:", sjf[4])
-    print("Algorithm SRT")
-    print("-- average CPU burst time:", srt[0], "ms")
-    print("-- average wait time:", srt[1], "ms")
-    print("-- average turnaround time:", srt[2], "ms")
-    print("-- total number of context switches:", srt[3])
-    print("-- total number of preemptions:", srt[4])
-    print("Algorithm RR")
-    print("-- average CPU burst time:", rr[0], "ms")
-    print("-- average wait time:", rr[1], "ms")
-    print("-- average turnaround time:", rr[2], "ms")
-    print("-- total number of context switches:", rr[3])
-    print("-- total number of preemptions:", rr[4])
+def end(fcfs: dict = None, sjf: dict = None, srt: dict = None, rr: dict = None):
+    with open('simout.txt', 'w') as stats:
+        stats.write("Algorithm FCFS\n")
+        stats.write(f"-- average CPU burst time: {fcfs['avg_burst']:.3f} ms\n")
+        stats.write(f"-- average wait time: {fcfs['avg_wait']:.3f} ms\n")
+        stats.write(f"-- average turnaround time: {fcfs['avg_turnaround']:.3f} ms\n")
+        stats.write(f"-- total number of context switches: {fcfs['context_switches']} ms\n")
+        stats.write(f"-- total number of preemptions: {fcfs['preemptions']} ms\n")
+        stats.write("Algorithm SJF\n")
+        stats.write(f"-- average CPU burst time: {sjf['avg_burst']:.3f} ms\n")
+        stats.write(f"-- average wait time: {sjf['avg_wait']:.3f} ms\n")
+        stats.write(f"-- average turnaround time: {sjf['avg_turnaround']:.3f} ms\n")
+        stats.write(f"-- total number of context switches: {sjf['context_switches']} ms\n")
+        stats.write(f"-- total number of preemptions: {sjf['preemptions']} ms\n")
+        stats.write("Algorithm SRT\n")
+        stats.write(f"-- average CPU burst time: {srt['avg_burst']:.3f} ms\n")
+        stats.write(f"-- average wait time: {srt['avg_wait']:.3f} ms\n")
+        stats.write(f"-- average turnaround time: {srt['avg_turnaround']:.3f} ms\n")
+        stats.write(f"-- total number of context switches: {srt['context_switches']} ms\n")
+        stats.write(f"-- total number of preemptions: {srt['preemptions']} ms\n")
+        stats.write("Algorithm RR\n")
+        stats.write(f"-- average CPU burst time: {rr['avg_burst']:.3f} ms\n")
+        stats.write(f"-- average wait time: {rr['avg_wait']:.3f} ms\n")
+        stats.write(f"-- average turnaround time: {rr['avg_turnaround']:.3f} ms\n")
+        stats.write(f"-- total number of context switches: {rr['context_switches']} ms\n")
+        stats.write(f"-- total number of preemptions: {rr['preemptions']} ms\n")
     

@@ -10,14 +10,16 @@ class CPU(object):
         self.current_process = False
         self.context_switch = int(cs)
         self.context_switch_total = int(cs)
+        self.switching = False
 
     def __str__(self):
         ret = "Running time "+ str(self.running_time)+ " Current process "+str(self.current_process)+" Contact switch total "+str(self.context_switch_total)+ \
-            " Contact Switch "+ str(self.context_switch)+ " Half "+ str(self.context_switch_remove)
+            " Contact Switch "+ str(self.context_switch)+ " Half "+ str(self.context_switch_remove) + " Switching " + str(self.switching)
         return ret
 
 # NEED ADD BEGINNING OR END
-def round_robin(processes, params, FCFS=False):
+def round_robin(processes, params, FCFS):
+    add_end = True if params.rr_add == "END" else False
     cpu = CPU(params.t_cs)
     time_slice = params.t_slice if not FCFS else 1e100
     statistics = {
@@ -40,6 +42,7 @@ def round_robin(processes, params, FCFS=False):
     queue = []
     for i in ordered:
         if i.arrival_time == 0:
+            # TODO: deal with ties?
             queue.append(i)
             ordered.remove(i)
     
@@ -52,17 +55,20 @@ def round_robin(processes, params, FCFS=False):
     while len(ordered) != 0:
         if not cpu.current_process:
             if len(queue) != 0:
-                #print(cpu)
-                if cpu.context_switch == cpu.context_switch_total:
+                if cpu.context_switch == cpu.context_switch_total and not cpu.switching:
                     cpu.context_switch = cpu.context_switch_remove - 1
                 elif cpu.context_switch != 1:
                     cpu.context_switch -= 1
                 elif cpu.context_switch == 1:
+                    cpu.switching = False
                     cpu.context_switch = cpu.context_switch_total
                     process = queue.pop(0)
                     cpu.current_process = process
                     queue_string = '<empty>' if len(queue) == 0 else ' '.join([i.name for i in queue])
-                    print(f'time {time}ms: Process {process.name} started using the CPU for {process.burst_time[0]}ms burst [Q {queue_string}]')
+                    if process.run_time != 0:
+                        print(f'time {time}ms: Process {process.name} started using the CPU with {process.burst_time[0] - process.run_time}ms burst remaining [Q {queue_string}]')
+                    else:
+                        print(f'time {time}ms: Process {process.name} started using the CPU for {process.burst_time[0]}ms burst [Q {queue_string}]')
         else:
             if cpu.current_process.run_time == cpu.current_process.burst_time[0] - 1:
                 cpu.current_process.burst_time.pop(0)
@@ -81,17 +87,29 @@ def round_robin(processes, params, FCFS=False):
                     blocking.append(cpu.current_process)
                     cpu.current_process.run_time = 0
                     cpu.current_process.sliced = 0
+                if cpu.context_switch == cpu.context_switch_total and len(queue) != 0:
+                    cpu.context_switch = cpu.context_switch_total
+                    cpu.switching = True
                 cpu.current_process = None
             elif cpu.current_process.run_time + 1 >= time_slice and cpu.current_process.sliced == 0:
+                #print(queue, time)
                 queue_string = '<empty>' if len(queue) == 0 else ' '.join([i.name for i in queue])
+                cpu.current_process.run_time += 1
+                cpu.current_process.sliced = 1
                 if len(queue) == 0:
                     # This will probably break if the ready queue is filled while this is going on
+                    # Also because of the binary nature of sliced, if the same burst takes more than 1 slice it will prbably break
                     print(f'time {time}ms: Time slice expired; no preemption because ready queue is empty [Q {queue_string}]')
-                    cpu.current_process.run_time += 1
-                    cpu.current_process.sliced = 1
                 else:
-                    pass
-                
+                    print(f'time {time}ms: Time slice expired; process {cpu.current_process.name} preempted with {cpu.current_process.burst_time[0] - cpu.current_process.run_time}ms to go [Q {queue_string}]')
+                    if cpu.context_switch == cpu.context_switch_total and len(queue) != 0:
+                        cpu.context_switch = cpu.context_switch_total
+                        cpu.switching = True
+                    if add_end:
+                        queue.append(cpu.current_process)
+                    else:
+                        queue.insert(0, cpu.current_process)
+                    cpu.current_process = None
             else:
                 cpu.current_process.run_time += 1
 
@@ -104,7 +122,10 @@ def round_robin(processes, params, FCFS=False):
         
             for i in removes:
                 p = blocking[i]
-                queue.append(p)
+                if add_end:
+                    queue.append(p)
+                else:
+                    queue.insert(0, p)
                 p.IO_burst.pop(0)
                 del blocking[i]
                 queue_string = '<empty>' if len(queue) == 0 else ' '.join([k.name for k in queue])
@@ -113,12 +134,16 @@ def round_robin(processes, params, FCFS=False):
         if len(a_times) != 0:
             if time == a_times[0][0]:
                 p = a_times.pop(0)[1]
-                queue.append(p)
+                if add_end:
+                    queue.append(p)
+                else:
+                    queue.insert(0, p)
                 q = ' '.join([i.name for i in queue])
                 print(f'time {time}ms: Process {p.name} arrived; added to ready queue [Q {q}]')
         else:
             pass
 
         time += 1
+        #if time > 3500:
+        #    break
     print(f'time {time+1}ms: Simulator ended for RR [Q <empty>]') if not FCFS else print(f'time {time+1}ms: Simulator ended for FCFS [Q <empty>]')
-
