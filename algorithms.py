@@ -17,7 +17,7 @@ class CPU(object):
         return ret
 
 # NEED ADD BEGINNING OR END
-def round_robin(processes, params, FCFS=False):
+def round_robin(processes, params, FCFS, add_end):
     cpu = CPU(params.t_cs)
     time_slice = params.t_slice if not FCFS else 1e100
     statistics = {
@@ -40,6 +40,7 @@ def round_robin(processes, params, FCFS=False):
     queue = []
     for i in ordered:
         if i.arrival_time == 0:
+            # TODO: deal with ties?
             queue.append(i)
             ordered.remove(i)
     
@@ -104,7 +105,10 @@ def round_robin(processes, params, FCFS=False):
         
             for i in removes:
                 p = blocking[i]
-                queue.append(p)
+                if add_end:
+                    queue.append(p)
+                else:
+                    queue.insert(0, p)
                 p.IO_burst.pop(0)
                 del blocking[i]
                 queue_string = '<empty>' if len(queue) == 0 else ' '.join([k.name for k in queue])
@@ -113,7 +117,10 @@ def round_robin(processes, params, FCFS=False):
         if len(a_times) != 0:
             if time == a_times[0][0]:
                 p = a_times.pop(0)[1]
-                queue.append(p)
+                if add_end:
+                    queue.append(p)
+                else:
+                    queue.insert(0, p)
                 q = ' '.join([i.name for i in queue])
                 print(f'time {time}ms: Process {p.name} arrived; added to ready queue [Q {q}]')
         else:
