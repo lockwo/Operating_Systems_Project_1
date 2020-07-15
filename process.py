@@ -31,6 +31,10 @@ class Process(object):
             if test < ub:
                 return test
 
+    def __repr__(self):
+        return f'Process {self.name}, Arrival time={self.arrival_time}, Num_bursts={self.num_burst}, Current_burst_num={self.current_burst_num}, \
+            Blocked_IO={self.blocked_IO}, tau={self.tau}'
+
     def __str__(self):
         ret = (
             self.name
