@@ -49,8 +49,7 @@ def sjf(processes, params):
             readyQueue.pop(smallest) # Must remove the empty []
 
         nextTime = usingCPU(readyQueue, time, params, nextProcess)
-
-        time += 1
+        time += params.t_cs / 2
 
     msg = (
         "time "
@@ -116,7 +115,7 @@ def addOntoQueue(readyQueue, processes, time):
             msg += " <empty>]"
             print(msg)
         else:
-            msg += getNames(readyQueue, [])
+            msg += getNames(readyQueue, [], processes)
             print(msg)
 
         # Update blocked IO
@@ -149,11 +148,17 @@ def usingCPU(readyQueue, time, params, nextProcess):
         + "[Q"
     )
 
+    index = nextProcess.current_burst_num
+    if index < nextProcess.num_burst - 1:
+        nextProcess.blocked_IO = nextProcess.IO_burst[index]
+        nextProcess.blocked_IO += nextProcess.burst_time[index]
+        nextProcess.blocked_IO += time + params.t_cs
+
     if len(readyQueue) == 0:
             msg += " <empty>]"
             print(msg)
     else:
-        msg += getNames(readyQueue, [])
+        msg += getNames(readyQueue, [], processes)
         print(msg)
 
     # return the time the job is finished
@@ -172,7 +177,7 @@ def finishCPU(readyQueue, time, nextProcess):
             + " terminated [Q"
         )
     else:
-        bursts = "burst" if nextProcess.num_burst - nextProcess.current_burst_num == 1 else "bursts"
+        #bursts = "burst" if nextProcess.num_burst - nextProcess.current_burst_num == 1 else "bursts"
         msg = (
             "time "
             + str(int(time))
@@ -198,23 +203,29 @@ def finishCPU(readyQueue, time, nextProcess):
             msg += " <empty>]"
             print(msg)
     else:
-        msg += getNames(readyQueue, [])
+        msg += getNames(readyQueue, [], processes)
         print(msg)
 
     return time
 
 
-def getNames(readyQueue, processesInQueue):
+def getNames(readyQueue, processesInQueue, processes):
     msg = ""
 
     # combine the values into one list
     for i in readyQueue.values():
         processesInQueue = processesInQueue + i
 
-    for i in processesInQueue:
-        msg += " " + i.name
+    for i in processes:
+        if i in processesInQueue:
+            msg += " " + i.name
 
     msg += "]"
+
+    # for i in processesInQueue:
+    #     msg += " " + i.name
+
+    # msg += "]"
 
     return msg
 
@@ -253,13 +264,16 @@ def recalculateTau(readyQueue, params, time, nextProcess):
             msg += " <empty>]"
             print(msg)
     else:
-        msg += getNames(readyQueue, [])
+        msg += getNames(readyQueue, [], processes)
         print(msg)
 
 def switchOut(readyQueue, params, time, nextProcess):
     # # update blocked IO
-    nextProcess.blocked_IO = nextProcess.IO_burst[nextProcess.current_burst_num - 1]
-    nextProcess.blocked_IO += time + params.t_cs / 2
+    # print(str(nextProcess.current_burst_num - 1))
+    # print(str(nextProcess.num_burst))
+    if nextProcess.current_burst_num < nextProcess.num_burst:
+        nextProcess.blocked_IO = nextProcess.IO_burst[nextProcess.current_burst_num - 1]
+        nextProcess.blocked_IO += time + params.t_cs / 2
 
     # Print
     msg = (
@@ -277,12 +291,8 @@ def switchOut(readyQueue, params, time, nextProcess):
             msg += " <empty>]"
             print(msg)
     else:
-        msg += getNames(readyQueue, [])
+        msg += getNames(readyQueue, [], processes)
         print(msg)
-
-    for l in readyQueue.values():
-        for p in l:
-            print(p.name)
 
     # Context switch time - out
     time += params.t_cs / 2
@@ -339,6 +349,7 @@ if __name__ == "__main__":
         # alpha=0.5,
         # t_slice=128,
         # rr_add="END",
+
         n=2,
         seed=2,
         lam=0.01,
@@ -347,6 +358,15 @@ if __name__ == "__main__":
         alpha=0.5,
         t_slice=128,
         rr_add="END",
+
+        # n=16,
+        # seed=2,
+        # lam=0.01,
+        # upper_bound=256,
+        # t_cs=4,
+        # alpha=0.75,
+        # t_slice=64,
+        # rr_add="END",
     )
     processes = []
     ran = Rand48(params.seed)
