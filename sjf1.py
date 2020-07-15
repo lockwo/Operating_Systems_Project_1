@@ -59,14 +59,15 @@ def sjf(processes, params):
             if not recalculated and time >= completionTime and finished:
                 recalculated = True
                 alpha = params.alpha
-                currentProcess.tau = normal_round( (alpha * currentProcess.burst_time[current_burst_num - 1]) + ((1 - alpha) * tau) )
+                currentProcess.tau = math.ceil( (alpha * currentProcess.burst_time[current_burst_num - 1]) + ((1 - alpha) * tau))
+                #print(currentProcess.tau)
                 tau = currentProcess.tau
                 msg = f"time {time}ms: Recalculated tau = {tau}ms for process {name} [Q"
                 msg += strReadyQueue(readyQueue)
                 print(msg)
             if not switched and time >= completionTime and recalculated:
                 switched = True
-                currentProcess.blocked_IO = currentProcess.IO_burst[current_burst_num - 1] + params.t_cs / 2 + time
+                currentProcess.blocked_IO = int(currentProcess.IO_burst[current_burst_num - 1] + params.t_cs / 2 + time)
                 ioQueue.append(currentProcess)
                 msg = f"time {time}ms: Process {name} switching out of CPU; will block on"
                 msg += f" I/O until time {int(currentProcess.blocked_IO)}ms [Q"
@@ -80,9 +81,10 @@ def sjf(processes, params):
 
         # Any completed IO?
         if len(ioQueue) > 0:
-            ioQueue = sorted(ioQueue, key=lambda x: x.name) # sort by name, so tie breaker
-            for i in ioQueue:
-
+            # problem is I remove it while i am iterating it
+            # prob same thing below
+            ioQueueTmp = sorted(ioQueue, key=lambda x: x.name) # sort by name, so tie breaker
+            for i in ioQueueTmp:
                 if time >= i.blocked_IO:
                     msg = f"time {time}ms: Process {i.name} (tau {int(i.tau)}ms) completed I/O; added"
                     msg += f" to ready queue [Q"
@@ -95,7 +97,8 @@ def sjf(processes, params):
 
         # Any arriving processes?
         if len(ordered) > 0:
-            for i in ordered:
+            orderedTmp = ordered
+            for i in orderedTmp:
                 if i.arrival_time == time:
                     readyQueue.append(i)
                     msg = f"time {time}ms: Process {i.name} (tau {int(i.tau)}ms) arrived; added to "
@@ -106,7 +109,7 @@ def sjf(processes, params):
                     ordered.pop(ordered.index(i))
 
         # Is current Process none?
-        if currentProcess == None:
+        if currentProcess == None and time >= switchedOutTime:
             # if there is something, add
             if len(readyQueue) > 0:
                 readyQueue = sorted(readyQueue, key=lambda x: x.tau) # sort first
@@ -130,29 +133,34 @@ def sjf(processes, params):
     msg = f"time {time}ms: Simulator ended for SJF [Q <empty>]"
     print(msg)
 
-def strReadyQueue(readyQueue):
-    if len(readyQueue) == 0:
-        return " <empty>]"
-    readyQueue = sorted(readyQueue, key=lambda x: x.tau)
-    msg = ""
-    currentValue = readyQueue[0].tau
-    queue = []
-    for p in readyQueue:
-        if p.tau == currentValue:
-            queue.append(p)
-        else:
-            currentValue = p.tau
-            queue = sorted(queue, key=lambda x: x.name)
-            for i in queue:
-                msg += " " + str(i.name)
-            queue.clear()
-            queue.append(p)
-    for j in queue:
-        msg += " " + str(j.name)
-    msg += "]"
-    return msg
+# Order by tau then by name
+def order(queue):
+    queue = sorted(queue, key=lambda x: x.tau)
+    orderKeys = dict()
+    for i in queue:
+        orderKeys[i.tau] = i
+    orderKeys = sorted(orderKeys)
+    queue = sorted(queue, key=lambda x: x.name)
+    current = []
+    final = []
+    for i in orderKeys:
+        for j in queue:
+            if j.tau == i:
+                current.append(j)
+        final = final + current
+        current.clear()
+    return final
         
 
+def strReadyQueue(readyQueue):
+    msg = ""
+    if len(readyQueue) == 0:
+        return " <empty>]"
+    else:
+        for i in order(readyQueue):
+            msg += " " + i.name
+        msg += "]"
+    return msg
 
 def print_start(processes):
     for i in processes:
@@ -178,14 +186,14 @@ def normal_round(n):
 
 if __name__ == "__main__":
     params = Params(
-        # n=1,
-        # seed=2,
-        # lam=0.01,
-        # upper_bound=256,
-        # t_cs=4,
-        # alpha=0.5,
-        # t_slice=128,
-        # rr_add="END",
+        n=1,
+        seed=2,
+        lam=0.01,
+        upper_bound=256,
+        t_cs=4,
+        alpha=0.5,
+        t_slice=128,
+        rr_add="END",
 
         # n=2,
         # seed=2,
@@ -196,14 +204,14 @@ if __name__ == "__main__":
         # t_slice=128,
         # rr_add="END",
 
-        n=16,
-        seed=2,
-        lam=0.01,
-        upper_bound=256,
-        t_cs=4,
-        alpha=0.75,
-        t_slice=64,
-        rr_add="END",
+        # n=16,
+        # seed=2,
+        # lam=0.01,
+        # upper_bound=256,
+        # t_cs=4,
+        # alpha=0.75,
+        # t_slice=64,
+        # rr_add="END",
     )
     processes = []
     ran = Rand48(params.seed)
