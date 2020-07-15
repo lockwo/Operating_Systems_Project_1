@@ -20,6 +20,8 @@ class Process(object):
                 )
         self.status = 2  # 0 = running, 1 = ready, 2 = waiting
         self.run_time = 0
+        self.total_run_time = 0
+        self.current_run_time = 0
         self.sliced = 0
         self.block_time = -1
         self.tau = 1 / params.lam
