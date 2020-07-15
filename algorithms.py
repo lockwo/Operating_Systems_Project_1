@@ -17,7 +17,8 @@ class CPU(object):
         return ret
 
 # NEED ADD BEGINNING OR END
-def round_robin(processes, params, FCFS, add_end):
+def round_robin(processes, params, FCFS):
+    add_end = True if params.rr_add == "END" else False
     cpu = CPU(params.t_cs)
     time_slice = params.t_slice if not FCFS else 1e100
     statistics = {
@@ -128,4 +129,3 @@ def round_robin(processes, params, FCFS, add_end):
 
         time += 1
     print(f'time {time+1}ms: Simulator ended for RR [Q <empty>]') if not FCFS else print(f'time {time+1}ms: Simulator ended for FCFS [Q <empty>]')
-
