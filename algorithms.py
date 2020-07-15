@@ -2,6 +2,7 @@ from process import Process
 from params import Params
 from rand48 import Rand48
 
+
 class CPU(object):
     def __init__(self, cs):
         self.running_time = 0
