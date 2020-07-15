@@ -10,10 +10,11 @@ class CPU(object):
         self.current_process = False
         self.context_switch = int(cs)
         self.context_switch_total = int(cs)
+        self.switching = False
 
     def __str__(self):
         ret = "Running time "+ str(self.running_time)+ " Current process "+str(self.current_process)+" Contact switch total "+str(self.context_switch_total)+ \
-            " Contact Switch "+ str(self.context_switch)+ " Half "+ str(self.context_switch_remove)
+            " Contact Switch "+ str(self.context_switch)+ " Half "+ str(self.context_switch_remove) + " Switching " + str(self.switching)
         return ret
 
 # NEED ADD BEGINNING OR END
@@ -55,11 +56,12 @@ def round_robin(processes, params, FCFS):
         if not cpu.current_process:
             if len(queue) != 0:
                 #print(cpu)
-                if cpu.context_switch == cpu.context_switch_total:
+                if cpu.context_switch == cpu.context_switch_total and not cpu.switching:
                     cpu.context_switch = cpu.context_switch_remove - 1
                 elif cpu.context_switch != 1:
                     cpu.context_switch -= 1
                 elif cpu.context_switch == 1:
+                    cpu.switching = False
                     cpu.context_switch = cpu.context_switch_total
                     process = queue.pop(0)
                     cpu.current_process = process
@@ -83,6 +85,9 @@ def round_robin(processes, params, FCFS):
                     blocking.append(cpu.current_process)
                     cpu.current_process.run_time = 0
                     cpu.current_process.sliced = 0
+                if cpu.context_switch == cpu.context_switch_total and len(queue) != 0:
+                    cpu.context_switch = cpu.context_switch_total
+                    cpu.switching = True
                 cpu.current_process = None
             elif cpu.current_process.run_time + 1 >= time_slice and cpu.current_process.sliced == 0:
                 queue_string = '<empty>' if len(queue) == 0 else ' '.join([i.name for i in queue])
@@ -92,8 +97,8 @@ def round_robin(processes, params, FCFS):
                     cpu.current_process.run_time += 1
                     cpu.current_process.sliced = 1
                 else:
+                    # Might need something here
                     pass
-                
             else:
                 cpu.current_process.run_time += 1
 
@@ -128,4 +133,6 @@ def round_robin(processes, params, FCFS):
             pass
 
         time += 1
+        #if time > 400:
+        #    break
     print(f'time {time+1}ms: Simulator ended for RR [Q <empty>]') if not FCFS else print(f'time {time+1}ms: Simulator ended for FCFS [Q <empty>]')
