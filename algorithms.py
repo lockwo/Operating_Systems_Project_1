@@ -2,7 +2,6 @@ from process import Process
 from params import Params
 from rand48 import Rand48
 
-
 class CPU(object):
     def __init__(self, cs):
         self.running_time = 0
@@ -18,8 +17,9 @@ class CPU(object):
         return ret
 
 # NEED ADD BEGINNING OR END
-def round_robin(processes, params):
+def round_robin(processes, params, FCFS=False):
     cpu = CPU(params.t_cs)
+    time_slice = params.t_slice if not FCFS else 1e100
     statistics = {
         "avg_burst": 0,
         "avg_wait": 0,
@@ -47,7 +47,7 @@ def round_robin(processes, params):
     queue_string = '<empty>' 
     if queue:
         queue_string = ' '.join([i.name for i in queue])
-    print(f'time {time}ms: Simulator started for RR [Q {queue_string}]')
+    print(f'time {time}ms: Simulator started for RR [Q {queue_string}]') if not FCFS else print(f'time {time}ms: Simulator started for FCFS [Q {queue_string}]')
     blocking = []
     while len(ordered) != 0:
         if not cpu.current_process:
@@ -82,7 +82,7 @@ def round_robin(processes, params):
                     cpu.current_process.run_time = 0
                     cpu.current_process.sliced = 0
                 cpu.current_process = None
-            elif cpu.current_process.run_time + 1 >= params.t_slice and cpu.current_process.sliced == 0:
+            elif cpu.current_process.run_time + 1 >= time_slice and cpu.current_process.sliced == 0:
                 queue_string = '<empty>' if len(queue) == 0 else ' '.join([i.name for i in queue])
                 if len(queue) == 0:
                     # This will probably break if the ready queue is filled while this is going on
@@ -120,5 +120,5 @@ def round_robin(processes, params):
             pass
 
         time += 1
-    print(f'time {time+1}ms: Simulator ended for RR [Q <empty>]')
+    print(f'time {time+1}ms: Simulator ended for RR [Q <empty>]') if not FCFS else print(f'time {time+1}ms: Simulator ended for FCFS [Q <empty>]')
 
