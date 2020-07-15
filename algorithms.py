@@ -30,29 +30,32 @@ def round_robin(processes, params, FCFS):
         "preemptions": 0
     }
     
-    for i in processes:
-        print(i)
+    #for i in processes:
+    #    print(i)
 
     for i in processes:
-        print(f"Process {i.name} [NEW] (arrival time {i.arrival_time} ms) {i.num_burst} CPU bursts")
+        print(f"Process {i.name} [NEW] (arrival time {i.arrival_time} ms) {i.num_burst} CPU bursts") if i.num_burst > 1 else \
+            print(f"Process {i.name} [NEW] (arrival time {i.arrival_time} ms) {i.num_burst} CPU burst")
 
     # Re-sort by set of processes by arrival time
     ordered = sorted(processes, key=lambda x: x.arrival_time)
-    a_times = [[i.arrival_time, i] for i in processes]
+    a_times = [[i.arrival_time, i] for i in ordered]
     queue = []
-    for i in ordered:
-        if i.arrival_time == 0:
-            # TODO: deal with ties?
-            queue.append(i)
-            ordered.remove(i)
     
     time = 0
+    add_after_time_slice = [-1, None]
     queue_string = '<empty>' 
-    if queue:
-        queue_string = ' '.join([i.name for i in queue])
     print(f'time {time}ms: Simulator started for RR [Q {queue_string}]') if not FCFS else print(f'time {time}ms: Simulator started for FCFS [Q {queue_string}]')
     blocking = []
     while len(ordered) != 0:
+        if add_after_time_slice[0] == 0:
+            if add_end:
+                queue.append(add_after_time_slice[1])
+            else:
+                queue.insert(0, add_after_time_slice[1])
+            add_after_time_slice = [-1, None]
+        elif add_after_time_slice[0] != -1:
+            add_after_time_slice[0] -= 1
         if not cpu.current_process:
             if len(queue) != 0:
                 if cpu.context_switch == cpu.context_switch_total and not cpu.switching:
@@ -105,10 +108,7 @@ def round_robin(processes, params, FCFS):
                     if cpu.context_switch == cpu.context_switch_total and len(queue) != 0:
                         cpu.context_switch = cpu.context_switch_total
                         cpu.switching = True
-                    if add_end:
-                        queue.append(cpu.current_process)
-                    else:
-                        queue.insert(0, cpu.current_process)
+                        add_after_time_slice = [1, cpu.current_process]
                     cpu.current_process = None
             else:
                 cpu.current_process.run_time += 1
@@ -119,7 +119,7 @@ def round_robin(processes, params, FCFS):
                 if blocking[i].block_time == 0: 
                     removes.append(i)
                 blocking[i].block_time -= 1
-        
+
             for i in removes:
                 p = blocking[i]
                 if add_end:
@@ -127,9 +127,11 @@ def round_robin(processes, params, FCFS):
                 else:
                     queue.insert(0, p)
                 p.IO_burst.pop(0)
-                del blocking[i]
                 queue_string = '<empty>' if len(queue) == 0 else ' '.join([k.name for k in queue])
                 print(f'time {time}ms: Process {p.name} completed I/O; added to ready queue [Q {queue_string}]')
+
+            for i in reversed(removes):
+                del blocking[i]
 
         if len(a_times) != 0:
             if time == a_times[0][0]:
@@ -144,6 +146,6 @@ def round_robin(processes, params, FCFS):
             pass
 
         time += 1
-        #if time > 3500:
+        #if time > 1300:
         #    break
     print(f'time {time+1}ms: Simulator ended for RR [Q <empty>]') if not FCFS else print(f'time {time+1}ms: Simulator ended for FCFS [Q <empty>]')
