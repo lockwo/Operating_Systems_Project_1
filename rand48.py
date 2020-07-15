@@ -21,10 +21,3 @@ class Rand48(object):
         if n & (1 << 31):
             n -= 1 << 32
         return n
-
-if __name__ == '__main__':
-    # Testing that rand() works
-    rand = Rand48(123123)
-    for i in range(10):
-        n = rand.drand()
-        print(n)

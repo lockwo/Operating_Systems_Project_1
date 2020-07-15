@@ -14,10 +14,10 @@ class Process(object):
             self.burst_time.append(
                 ceil(self.activation(r, params.lam, params.upper_bound))
             )
-            self.IO_burst.append(
-                ceil(self.activation(r, params.lam, params.upper_bound))
-            )
-        self.IO_burst.pop()
+            if i != self.num_burst-1:
+                self.IO_burst.append(
+                    ceil(self.activation(r, params.lam, params.upper_bound))
+                )
         self.status = 2  # 0 = running, 1 = ready, 2 = waiting
         self.run_time = 0
         self.sliced = 0
