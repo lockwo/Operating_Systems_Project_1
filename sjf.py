@@ -5,29 +5,59 @@ from params import Params
 import print_sim
 import math
 
+def sjf(processes, params):
+    readyQueue = dict()
+    time = 0 # change to 0 later and have loop code set it
+    nextTime = -1
 
-def getNames(readyQueue, processesInQueue):
-    msg = ""
+    while (not allDone(processes)):
+        
+        # if time > 200:
+        #     break
+        
+        # See if any processes need to be added
+        addOntoQueue(readyQueue, processes, time)
 
-    # combine the values into one list
-    for i in readyQueue.values():
-        processesInQueue = processesInQueue + i
+        # if the process running is still not done
+        if time < nextTime:
+            time += 1
+            continue
 
-    for i in processesInQueue:
-        msg += " " + i.name
+        # Now finish up the process and switch it out
+        if time == nextTime:
+            finishCPU(readyQueue, time, nextProcess)
+            if nextProcess.done:
+                time += params.t_cs / 2
+                continue
+            recalculateTau(readyQueue, params, time, nextProcess)
+            time = switchOut(readyQueue, params, time, nextProcess)
+            continue
 
-    msg += "]"
+        # Skip if nothing to add from readyQueue
+        if len(readyQueue) == 0:
+            time += 1
+            continue
 
-    return msg
+        # get the next process with the smallest predicted CPU Burst time
+        smallest = min(readyQueue)
 
+        # if more than one, perform tie breaker
+        if len(readyQueue[smallest]) > 1:
+            nextProcess = tiebreaker(readyQueue[smallest])
+        else:
+            nextProcess = readyQueue[smallest].pop(0)
+            readyQueue.pop(smallest) # Must remove the empty []
 
-def tiebreaker(processes):
-    smallestName = processes.pop(0)
-    while len(processes) > 0:
-        tmpName = processes.pop(0)
-        if smallestName > tmpName:
-            smallestName = tmpName
-    return smallestName
+        nextTime = usingCPU(readyQueue, time, params, nextProcess)
+
+        time += 1
+
+    msg = (
+        "time "
+        + str(int(time))
+        + "ms: Simulator ended for SJF [Q <empty>]"
+    )
+    print(msg)
 
 
 def addOntoQueue(readyQueue, processes, time):
@@ -36,17 +66,21 @@ def addOntoQueue(readyQueue, processes, time):
         # Skip if the process arrival didn't occur yet
         if time < processes[i].arrival_time:
             continue
-        # Skip if the process is in the ready queue already
-        if processes[i] in readyQueue.values():
-            continue
-
         # Skip if done bursting
         if processes[i].current_burst_num >= processes[i].num_burst:
+            continue
+
+        if processes[i].done:
             continue
 
         # Skip if blocked for I/O
         if processes[i].blocked_IO > time:
             continue
+
+        for l in readyQueue.values():
+            for j in l:
+                if j.name == processes[i].name:
+                    return
 
         # add into the dictionary
         key = processes[i].tau
@@ -69,12 +103,12 @@ def addOntoQueue(readyQueue, processes, time):
         
         if processes[i].current_burst_num == 0:
             msg += (
-                " arrived; added to the ready queue "
+                " arrived; added to ready queue "
                 + "[Q"
             )
         else:
             msg += (
-                " completed I/O; added to the ready queue "
+                " completed I/O; added to ready queue "
                 + "[Q"
             )
 
@@ -85,13 +119,16 @@ def addOntoQueue(readyQueue, processes, time):
             msg += getNames(readyQueue, [])
             print(msg)
 
-# FIX PROCESS NUM, HOW TO GET THE PROCESS !!!
+        # Update blocked IO
+        index = processes[i].current_burst_num
+        if not (index >= processes[i].num_burst): # there's one less io burst
+            if (index == processes[i].num_burst - 1):
+                processes[i].done = True
+                return
+            processes[i].blocked_IO = processes[i].IO_burst[index]
+            processes[i].blocked_IO += processes[i].burst_time[index]
+            processes[i].blocked_IO += time + params.t_cs
 
-# msg = "time " + str(time) + "ms: Process " + processes[i].name + \
-# " started using the CPU for " + \
-# str(processes[i].burst_time[current_burst_num]) \
-# + "ms burst " + "[Q"
-# time += params.t_cs / 2
 
 def usingCPU(readyQueue, time, params, nextProcess):
     # add context switch time
@@ -104,7 +141,7 @@ def usingCPU(readyQueue, time, params, nextProcess):
         + "ms: Process "
         + nextProcess.name
         + " (tau "
-        + str(int(processes[i].tau))
+        + str(int(nextProcess.tau))
         + "ms)"
         + " started using the CPU for "
         + str(nextProcess.burst_time[nextProcess.current_burst_num])
@@ -119,18 +156,18 @@ def usingCPU(readyQueue, time, params, nextProcess):
         msg += getNames(readyQueue, [])
         print(msg)
 
-    return time
+    # return the time the job is finished
+    return nextProcess.burst_time[nextProcess.current_burst_num] + time
 
 def finishCPU(readyQueue, time, nextProcess):
     # Update time, current_burst_num
-    time += nextProcess.burst_time[nextProcess.current_burst_num]
     nextProcess.current_burst_num += 1
 
     if nextProcess.num_burst - nextProcess.current_burst_num == 0:
         msg = (
             "time "
             + str(int(time))
-            + "msg: Process "
+            + "ms: Process "
             + nextProcess.name
             + " terminated [Q"
         )
@@ -141,13 +178,20 @@ def finishCPU(readyQueue, time, nextProcess):
             + "ms: Process "
             + nextProcess.name
             + " (tau "
-            + str(int(processes[i].tau))
+            + str(int(nextProcess.tau))
             + "ms)"
             + " completed a CPU burst; "
             + str(nextProcess.num_burst - nextProcess.current_burst_num)
-            + " bursts to go "
-            + "[Q"
         )
+        if nextProcess.num_burst - nextProcess.current_burst_num == 1:
+            msg += (
+                " burst to go [Q"
+            )
+        else:
+            msg += (
+                " bursts to go "
+                + "[Q"
+            )
 
     if len(readyQueue) == 0:
             msg += " <empty>]"
@@ -157,6 +201,34 @@ def finishCPU(readyQueue, time, nextProcess):
         print(msg)
 
     return time
+
+
+def getNames(readyQueue, processesInQueue):
+    msg = ""
+
+    # combine the values into one list
+    for i in readyQueue.values():
+        processesInQueue = processesInQueue + i
+
+    for i in processesInQueue:
+        msg += " " + i.name
+
+    msg += "]"
+
+    return msg
+
+
+def tiebreaker(processes):
+    smallestProcess = processes[0]
+    smallestName = smallestProcess.name
+    for i in range(len(processes)):
+        tmpProcess = processes[i]
+        tmpName = tmpProcess.name
+        if smallestName > tmpName:
+            smallestName = tmpName
+            smallestProcess = tmpProcess
+    return smallestProcess
+
 
 def recalculateTau(readyQueue, params, time, nextProcess):
     # Recalculate 
@@ -184,7 +256,7 @@ def recalculateTau(readyQueue, params, time, nextProcess):
         print(msg)
 
 def switchOut(readyQueue, params, time, nextProcess):
-    # update blocked IO
+    # # update blocked IO
     nextProcess.blocked_IO = nextProcess.IO_burst[nextProcess.current_burst_num - 1]
     nextProcess.blocked_IO += time + params.t_cs / 2
 
@@ -207,6 +279,10 @@ def switchOut(readyQueue, params, time, nextProcess):
         msg += getNames(readyQueue, [])
         print(msg)
 
+    for l in readyQueue.values():
+        for p in l:
+            print(p.name)
+
     # Context switch time - out
     time += params.t_cs / 2
 
@@ -224,54 +300,18 @@ def normal_round(n):
         return math.floor(n)
     return math.ceil(n)
 
-def sjf(processes, params):
-    readyQueue = dict()
-    time = 0 # change to 0 later and have loop code set it
-    while (not allDone(processes)):
-
-        # add any processes that need to be added, onto the ready queue
-        addOntoQueue(readyQueue, processes, time)
-
-        # Skip if nothing to add from readyQueue
-        if len(readyQueue) == 0:
-            time += 1
-            continue
-
-        # get the process with the smallest predicted CPU Burst time
-        smallest = min(readyQueue)
-
-        # if more than one, perform tie breaker
-        if len(readyQueue[smallest]) > 1:
-            nextProcess = tiebreaker(readyQueue[smallest])
-        else:
-            nextProcess = readyQueue[smallest].pop(0)
-            readyQueue.pop(smallest) # Must remove the empty []
-
-        # now take the process and let it use the CPU
-        time = usingCPU(readyQueue, time, params, nextProcess)
-        time = finishCPU(readyQueue, time, nextProcess)
-
-        # End?
-        if nextProcess.num_burst - nextProcess.current_burst_num == 0:
-            time += params.t_cs / 2
-            continue
-
-        recalculateTau(readyQueue, params, time, nextProcess)
-        switchOut(readyQueue, params, time, nextProcess)
-
-        time += 1
-    
-    msg = (
-        "time "
-        + str(int(time))
-        + "ms: Simulator ends for SJF [Q <empty>]"
-    )
-    print(msg)
-
 
 if __name__ == "__main__":
     params = Params(
-        n=1,
+        # n=1,
+        # seed=2,
+        # lam=0.01,
+        # upper_bound=256,
+        # t_cs=4,
+        # alpha=0.5,
+        # t_slice=128,
+        # rr_add="END",
+        n=2,
         seed=2,
         lam=0.01,
         upper_bound=256,
