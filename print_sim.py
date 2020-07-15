@@ -6,7 +6,7 @@ def p_sim(time, processes, Q, params, algo):
             if algo == "FCFS" or algo == "RR":
                 print("Process", i.name, "[NEW] (arrival time", i.arrival_time, "ms)", i.num_burst, "CPU Bursts")
             if algo == "SJF" or algo == "SRT":
-                print("Process", i.name, "[NEW] (arrival time", i.arrival_time, "ms)", i.num_burst, "CPU Bursts (tau", str(i.tau) + "ms)")
+                print("Process", i.name, "[NEW] (arrival time", i.arrival_time, "ms)", i.num_burst, "CPU Bursts (tau", str(int(i.tau)) + "ms)")
         if len(Q) == 0:
             print("time 0ms: Simulator started for", algo, "[Q <empty>]")
         else:

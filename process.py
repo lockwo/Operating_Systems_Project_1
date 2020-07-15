@@ -19,7 +19,7 @@ class Process(object):
             )
         self.IO_burst.pop()
         self.status = 2  # 0 = running, 1 = ready, 2 = waiting
-        self.tau = 1 / params.lam
+        self.tau = 1 / params.lam # On the basis that tau is always even... I believe
 
     def activation(self, r, lam, ub):
         while 1:
