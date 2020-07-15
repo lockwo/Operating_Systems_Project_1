@@ -10,23 +10,15 @@ if len(sys.argv) == 9:
 else:
     params = Params(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], "END")
 
+# FCFS
 processes = []
-
 ran = Rand48(params.seed)
 ran.srand(params.seed)
 for i in range(params.n):
     processes.append(Process(chr(i + 65), params, ran))
 
-Q = []
-# FCFS
-time = 0
-for i in processes:
-    print(i)
-while(1):
-
-    p_sim(time, processes, Q, params, "FCFS")
-    break 
-    time += 1
+# RR
+round_robin(processes, params, True)
 
 processes = []
 ran = Rand48(params.seed)
@@ -56,13 +48,14 @@ while(1):
     break
     time += 1
 
+
+# RR
 processes = []
 ran = Rand48(params.seed)
 ran.srand(params.seed)
 for i in range(params.n):
     processes.append(Process(chr(i + 65), params, ran))
 
-# RR
 round_robin(processes, params)
 
 #end([0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0])
