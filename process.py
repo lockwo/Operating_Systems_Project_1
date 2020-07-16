@@ -24,6 +24,7 @@ class Process(object):
         self.block_time = -1
         self.tau = 1 / params.lam
         self.done = False
+        self.originalTime = 0
 
     def activation(self, r, lam, ub):
         while 1:
