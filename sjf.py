@@ -55,7 +55,6 @@ def sjf(processes, params):
             if not finished and time >= completionTime and started:
                 finished = True
                 currentProcess.endTime[current_burst_num] = time + params.t_cs /2
-                # print("Turnaround time is " + str(time + (params.t_cs/2) - currentProcess.startTime[current_burst_num]))
                 currentProcess.current_burst_num += 1
                 current_burst_num = currentProcess.current_burst_num
 
@@ -80,7 +79,6 @@ def sjf(processes, params):
                 recalculated = True
                 alpha = params.alpha
                 currentProcess.tau = math.ceil( (alpha * currentProcess.burst_time[current_burst_num - 1]) + ((1 - alpha) * tau))
-                #print(currentProcess.tau)
                 tau = currentProcess.tau
                 msg = f"time {time}ms: Recalculated tau = {tau}ms for process {name} [Q"
                 msg += strReadyQueue(readyQueue)
@@ -103,8 +101,6 @@ def sjf(processes, params):
 
         # Any completed IO?
         if len(ioQueue) > 0:
-            # problem is I remove it while i am iterating it
-            # prob same thing below
             ioQueueTmp = sorted(ioQueue, key=lambda x: x.name) # sort by name, so tie breaker
             for i in ioQueueTmp:
                 if time >= i.blocked_IO:
@@ -114,7 +110,6 @@ def sjf(processes, params):
                    
                     readyQueue.append(i)
                     i.start_wait = time
-                    # print(i.name + " joining readyQueue at time " + str(time))
                    
                     i.run_time = time + params.t_cs / 2
                     msg += strReadyQueue(readyQueue)
@@ -129,8 +124,6 @@ def sjf(processes, params):
                 if i.arrival_time == time:
                     readyQueue.append(i)
                     i.start_wait = time
-                    # if i.startTime[i.current_burst_num] == 0:
-                    #     i.startTime[i.current_burst_num] = time
                     msg = f"time {time}ms: Process {i.name} (tau {int(i.tau)}ms) arrived; added to "
                     msg += f"ready queue [Q"
                     msg += strReadyQueue(readyQueue)
@@ -153,8 +146,7 @@ def sjf(processes, params):
                         currentProcess = p
                 index = readyQueue.index(currentProcess)
                 readyQueue.pop(index)
-                # print(currentProcess.name + " exiting readyQueue at time " + str(time))
-                # print(currentProcess.name + " add wait time " + str(time - currentProcess.start_wait))
+
                 currentProcess.wait_time += time - currentProcess.start_wait
 
                 started = False
@@ -163,10 +155,6 @@ def sjf(processes, params):
                 switched = False
                 switchedOut = False
                 currentProcess.run_time = time + params.t_cs / 2
-        # for i in readyQueue:
-        #     if time < switchedOutTime or time < i.run_time:
-        #         continue
-        #     i.wait_time += 1
         time += 1
 
     msg = f"time {time}ms: Simulator ended for SJF [Q <empty>]"
