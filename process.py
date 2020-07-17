@@ -36,7 +36,9 @@ class Process(object):
         self.wait_time = 0
         self.start_wait = 0
         self.originalTime = 0
-        self.originalTau = 1 / params.lam
+        self.originalTau = 1 / params.lam	
+        self.avg_burst_calc = sum(self.burst_time)/len(self.burst_time)
+        self.total_burst_calc = sum(self.burst_time)
 
     def activation(self, r, lam, ub):
         while 1:
