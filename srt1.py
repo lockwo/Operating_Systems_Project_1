@@ -6,6 +6,17 @@ import math
 
 
 def srt(processes, params):
+    statistics = {
+        "avg_burst": 0,
+        "avg_wait": 0,
+        "avg_turnaround": 0,
+        "context_switches": 0,
+        "preemptions": 0,
+        'avg_io_burst': 0
+    }
+    statistics["avg_burst"] = sum([sum(i.burst_time) for i in processes])/sum([len(i.burst_time) for i in processes])
+    statistics["avg_io_burst"] = sum([sum(i.IO_burst) for i in processes])/sum([len(i.IO_burst) for i in processes])
+
     readyQueue = []
     ioQueue = []
     ordered = sorted(processes, key=lambda x: x.arrival_time)
@@ -217,6 +228,7 @@ def srt(processes, params):
 
     msg = f"time {time}ms: Simulator ended for SRT [Q <empty>]"
     print(msg)
+    return statistics
 
 # Order by tau then by name
 def order(queue):
