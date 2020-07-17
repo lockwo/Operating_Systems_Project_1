@@ -29,15 +29,22 @@ def srt(processes, params):
             if not started and time >= arrival_time + params.t_cs / 2 and time >= currentProcess.run_time:
                 startTime = time
                 started = True
+                # Set original time to the original burst
+                if currentProcess.originalTime < currentProcess.burst_time[current_burst_num]:
+                    currentProcess.originalTime = currentProcess.burst_time[current_burst_num]
                 msg = f"time {time}ms: Process {name} (tau {tau}ms) started using the CPU"
-                msg += f" for {currentProcess.burst_time[current_burst_num]}ms burst [Q"
+                msg += f" with {currentProcess.burst_time[current_burst_num]}ms burst remaining [Q"
                 msg += strReadyQueue(readyQueue)
                 print(msg)
+            # print(startTime)
+            # print(currentProcess.originalTime)
             completionTime = currentProcess.burst_time[current_burst_num] + startTime
             if not finished and time >= completionTime and started:
+                # print(completionTime)
                 finished = True
                 currentProcess.current_burst_num += 1
                 current_burst_num = currentProcess.current_burst_num
+                # currentProcess.originalTime = 0
 
                 if currentProcess.num_burst - current_burst_num == 0:
                     finished = False
@@ -58,7 +65,8 @@ def srt(processes, params):
             if not recalculated and time >= completionTime and finished:
                 recalculated = True
                 alpha = params.alpha
-                currentProcess.tau = math.ceil( (alpha * currentProcess.burst_time[current_burst_num - 1]) + ((1 - alpha) * tau))
+                currentProcess.tau = math.ceil( (alpha * currentProcess.originalTime) + ((1 - alpha) * tau))
+                currentProcess.originalTime = 0 # reset it to zero
                 #print(currentProcess.tau)
                 tau = currentProcess.tau
                 msg = f"time {time}ms: Recalculated tau = {tau}ms for process {name} [Q"
@@ -89,8 +97,41 @@ def srt(processes, params):
                     msg += f" to ready queue [Q"
                     ioQueue.pop(ioQueue.index(i))
                     readyQueue.append(i)
+                    msg1 = strReadyQueue(readyQueue)
+                    msg += msg1
                     i.run_time = time + params.t_cs / 2
-                    msg += strReadyQueue(readyQueue)
+                    
+                    # Now check for preemption
+                    if started and not finished and currentProcess != None: # if it already started finishing, don't preempt
+                        # Update currentProcess' remaining time
+                        cbn = currentProcess.current_burst_num
+                        # try adding tau or currentProcess.originalTime - (time - startTime)
+                        # whichever one is smaller
+                        # print(currentProcess.originalTime - (time - startTime))
+                        # print(i.name + str(i.tau))
+                        #currentProcess.originalTime - (time - startTime)
+
+                        # changed from tau to actual burst
+                        if i.tau <= currentProcess.burst_time[cbn] - (time - startTime) and i.tau < currentProcess.tau:
+                            # print("Preempting")
+                            # preempt!
+                            # Change message
+                            currentProcess.burst_time[cbn] = currentProcess.burst_time[cbn] - (time - startTime)
+                            msg = f"time {time}ms: Process {i.name} (tau {int(i.tau)}ms) completed I/O;"
+                            msg += f" preempting {currentProcess.name} [Q"
+                            print(currentProcess.name + str(currentProcess.burst_time[cbn]))
+                            readyQueue.append(currentProcess)
+                            currentProcess = i
+                            # reset
+                            started = False
+                            finished = False
+                            recalculated = False
+                            switched = False
+                            switchedOut = False
+                            readyQueue.remove(i)
+                            i.run_time += params.t_cs / 2 # switch out current Process, switching in is already added
+
+                            msg += msg1
                     print(msg)
                     
 
@@ -111,7 +152,7 @@ def srt(processes, params):
         if currentProcess == None and time >= switchedOutTime:
             # if there is something, add
             if len(readyQueue) > 0:
-                readyQueue = sorted(readyQueue, key=lambda x: x.tau) # sort first
+                readyQueue = sorted(readyQueue, key=lambda x:  x.tau) # sort first
                 currentProcess = readyQueue[0]
                 # If a process has the same tau but comes first alphabetically, take it
                 for p in processes:
@@ -134,6 +175,11 @@ def srt(processes, params):
 
 # Order by tau then by name
 def order(queue):
+    for i in queue: # set the sort num
+        if i.burst_time[i.current_burst_num] < i.originalTime:
+            i.sortTime = i.burst_time[i.current_burst_num]
+        else:
+            i.sortTime = i.tau
     queue = sorted(queue, key=lambda x: x.tau)
     orderKeys = dict()
     for i in queue:

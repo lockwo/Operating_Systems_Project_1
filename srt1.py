@@ -19,8 +19,10 @@ def srt(processes, params):
     switchedOutTime = 0
     startTime = 0
     toBeAdded = []
-    mostRecentArrived = None
-
+    toBePreempted = None
+    preemptTime = 0
+    cantPreempt = False
+    
     while (len(ordered) != 0 or currentProcess != None or len(readyQueue) != 0 or len(ioQueue) != 0 or time < switchedOutTime):
         
         toBeAddedTmp = sorted(toBeAdded, key=lambda x: x.run_time)
@@ -30,7 +32,21 @@ def srt(processes, params):
                 toBeAdded.remove(i)
                 # print(i.name + " added back at time " + str(time))
 
-        
+        # if toBePreempted != None and time == toBePreempted.run_time:
+        #         print(toBePreempted.name)
+        #         print(time)
+
+        if toBePreempted != None and time == toBePreempted.run_time:
+            # print("performing preempt without mentioning")
+            # print(toBePreempted.name)
+            # print(time)
+            #currentProcess.remove = False
+            readyQueue.append(currentProcess)
+            currentProcess = toBePreempted
+            readyQueue.remove(toBePreempted)
+            toBePreempted = None
+            # print("current process is " + currentProcess.name)
+
         # If there is a current process running
         if currentProcess != None and time >= switchedOutTime + params.t_cs / 2:
             if currentProcess in readyQueue and currentProcess.remove and currentProcess.run_time <= time:
@@ -49,8 +65,9 @@ def srt(processes, params):
                 msg += f" with {int(currentProcess.burst_time[current_burst_num] - elapsed)}ms burst remaining [Q"
                 msg += strReadyQueue(readyQueue)
                 print(msg)
-            completionTime = int(currentProcess.burst_time[current_burst_num] + startTime - elapsed)
-            if not finished and time >= completionTime and started:
+                # print("current process is " + currentProcess.name)
+                completionTime = int(currentProcess.burst_time[current_burst_num] + startTime - elapsed)
+            if started and not finished and time >= completionTime:
                 finished = True
                 currentProcess.current_burst_num += 1
                 current_burst_num = currentProcess.current_burst_num
@@ -71,7 +88,7 @@ def srt(processes, params):
                     msg += f" to go [Q"
                     msg += strReadyQueue(readyQueue)
                     print(msg)
-            if not recalculated and time >= completionTime and finished:
+            if started and not recalculated and time >= completionTime and finished:
                 recalculated = True
                 alpha = params.alpha
                 currentProcess.tau = math.ceil( (alpha * currentProcess.burst_time[current_burst_num - 1]) + ((1 - alpha) * tau))
@@ -81,7 +98,7 @@ def srt(processes, params):
                 msg = f"time {time}ms: Recalculated tau = {tau}ms for process {name} [Q"
                 msg += strReadyQueue(readyQueue)
                 print(msg)
-            if not switched and time >= completionTime and recalculated:
+            if started and not switched and time >= completionTime and recalculated:
                 switched = True
                 currentProcess.blocked_IO = int(currentProcess.IO_burst[current_burst_num - 1] + params.t_cs / 2 + time)
                 ioQueue.append(currentProcess)
@@ -91,13 +108,55 @@ def srt(processes, params):
                 switchedOutTime = time + params.t_cs
                 print(msg)
                 currentProcess = None
-            if not switchedOut and time >= completionTime and switched:
+            if started and not switchedOut and time >= completionTime and switched:
                 switchedOut = True
                 switchedOutTime = completionTime + params.t_cs / 2
+
+        # if toBePreempted != None:
+        #     print(toBePreempted.name)
+        #     print(time)
+        #     print(toBePreempted.run_time)
+        #     print(preemptTime)
+
+            # if there is a process that needs to be preempted
+        if toBePreempted != None and time >= preemptTime:
+            msg = f"time {time}ms: Process {toBePreempted.name} (tau {int(toBePreempted.tau)}ms) will preempt "
+            msg += f"{currentProcess.name} [Q"
+            msg += strReadyQueue(readyQueue)
+            print(msg)
+
+            toBeAdded.append(currentProcess)
+            currentProcess.run_time = time + params.t_cs / 2
+
+            currentProcess = toBePreempted
+            
+            #readyQueue.remove(currentProcess)
+            # currentProcess.remove = False
+
+            # reset
+            started = False
+            finished = False
+            recalculated = False
+            switched = False
+            switchedOut = False
+
+            #readyQueue.remove(i)
+            toBePreempted.remove = True
+
+            switchedOutTime = time + params.t_cs / 2
+
+            toBePreempted.run_time = time + params.t_cs # switch out current Process, switching in is already added
+
+            cantPreempt = True
+            toBePreempted = None
 
         # Any completed IO?
 
         if len(ioQueue) > 0:
+            msg = ""
+
+#
+
             ioQueueTmp = sorted(ioQueue, key=lambda x: x.name) # sort by name, so tie breaker
             for i in ioQueueTmp:
                 # print(i.name + " " + str(i.blocked_IO))
@@ -110,6 +169,25 @@ def srt(processes, params):
                     msg1 = strReadyQueue(readyQueue)
                     msg += msg1
 
+                    # print(i.name + " " + str(i.originalTau) )
+                    # print(started)
+                    # print(not finished)
+                    # print(currentProcess != None)
+                    # if currentProcess != None:
+                    #     print(currentProcess.originalTau)
+
+                    # In midst of context switching
+                    if not started and not finished: #and currentProcess != None:
+                        # if it would preempt
+                        if i.originalTau < currentProcess.originalTau: #- (time - startTime):
+                            toBePreempted = i
+                            preemptTime = switchedOutTime + params.t_cs / 2
+                            # print("toBePreempted set to " + i.name)
+                            # print(toBePreempted.run_time)
+                    
+                    # if cantPreempt:
+                    #     continue
+                        
                     # Now check for preemption
                     if started and not finished and currentProcess != None: # if it already started finishing, don't preempt
                         # print(i.name + str(i.tau))
@@ -130,6 +208,8 @@ def srt(processes, params):
                             switched = False
                             switchedOut = False
 
+                            switchedOutTime = time + params.t_cs / 2
+                            #print(switchedOutTime)
                             #readyQueue.remove(i)
                             i.remove = True
 
@@ -137,6 +217,8 @@ def srt(processes, params):
 
                             msg += msg1
                     print(msg)
+            
+            # cantPreempt = False
 
         # Any arriving processes?
         if len(ordered) > 0:
@@ -155,7 +237,8 @@ def srt(processes, params):
         if currentProcess == None and time >= switchedOutTime:
             # if there is something, add
             if len(readyQueue) > 0:
-                readyQueue = sorted(readyQueue, key=lambda x: x.originalTau) # sort first
+                readyQueue = order(readyQueue)
+                #readyQueue = sorted(readyQueue, key=lambda x: x.originalTau) # sort first
                 currentProcess = readyQueue[0]
                 # If a process has the same tau but comes first alphabetically, take it
                 for p in processes:
@@ -171,9 +254,27 @@ def srt(processes, params):
                 switched = False
                 switchedOut = False
                 currentProcess.run_time = time + params.t_cs / 2
+
+        if currentProcess != None and time >= switchedOutTime:
+            if currentProcess in readyQueue and currentProcess.remove:
+                readyQueue.remove(currentProcess)
+                currentProcess.remove = False
+       
+        # # remove duplicates in readyQueue
+        # readyQueueTmp = order(readyQueue)
+        # for i in readyQueueTmp:
+        #     count = 0
+        #     for j in readyQueueTmp:
+        #         if i.name == j.name:
+        #             count += 1
+        #             if count > 1:
+        #                 readyQueue.remove(j)
+        #                 j.remove = False
+                
+
         time += 1
 
-    msg = f"time {time}ms: Simulator ended for srt [Q <empty>]"
+    msg = f"time {time}ms: Simulator ended for SRT [Q <empty>]"
     print(msg)
 
 # Order by tau then by name
@@ -192,6 +293,7 @@ def order(queue):
                 current.append(j)
         final = final + current
         current.clear()
+    queue = final
     return final
         
 
@@ -200,8 +302,12 @@ def strReadyQueue(readyQueue):
     if len(readyQueue) == 0:
         return " <empty>]"
     else:
+        alreadyPrinted = []
         for i in order(readyQueue):
+            if i in alreadyPrinted:
+                continue
             msg += " " + i.name
+            alreadyPrinted.append(i)
         msg += "]"
     return msg
 
@@ -234,14 +340,14 @@ def normal_round(n):
 
 if __name__ == "__main__":
     params = Params(
-        # n=1,
-        # seed=2,
-        # lam=0.01,
-        # upper_bound=256,
-        # t_cs=4,
-        # alpha=0.5,
-        # t_slice=128,
-        # rr_add="END",
+        n=1,
+        seed=2,
+        lam=0.01,
+        upper_bound=256,
+        t_cs=4,
+        alpha=0.5,
+        t_slice=128,
+        rr_add="END",
 
         # n=2,
         # seed=2,
@@ -252,14 +358,14 @@ if __name__ == "__main__":
         # t_slice=128,
         # rr_add="END",
 
-        n=16,
-        seed=2,
-        lam=0.01,
-        upper_bound=256,
-        t_cs=4,
-        alpha=0.75,
-        t_slice=64,
-        rr_add="END",
+        # n=16,
+        # seed=2,
+        # lam=0.01,
+        # upper_bound=256,
+        # t_cs=4,
+        # alpha=0.75,
+        # t_slice=64,
+        # rr_add="END",
 
         # n=8,
         # seed=64,
