@@ -13,11 +13,17 @@ def sjf(processes, params):
         "avg_turnaround": 0,
         "context_switches": 0,
         "preemptions": 0,
-        'avg_io_burst': 0
+        "avg_io_burst": 0,
     }
-    statistics["avg_burst"] = round(sum([sum(i.burst_time) for i in processes])/sum([len(i.burst_time) for i in processes]),3)
-    #statistics["avg_burst"] = sum([sum(i.burst_time) for i in processes])/sum([len(i.burst_time) for i in processes])
-    statistics["avg_io_burst"] = sum([sum(i.IO_burst) for i in processes])/sum([len(i.IO_burst) for i in processes])
+    statistics["avg_burst"] = round(
+        sum([sum(i.burst_time) for i in processes])
+        / sum([len(i.burst_time) for i in processes]),
+        3,
+    )
+    # statistics["avg_burst"] = sum([sum(i.burst_time) for i in processes])/sum([len(i.burst_time) for i in processes])
+    statistics["avg_io_burst"] = sum([sum(i.IO_burst) for i in processes]) / sum(
+        [len(i.IO_burst) for i in processes]
+    )
     readyQueue = []
     ioQueue = []
     ordered = sorted(processes, key=lambda x: x.arrival_time)
@@ -33,20 +39,32 @@ def sjf(processes, params):
 
     contextSwitch = 0
     print_start(processes)
-    while (len(ordered) != 0 or currentProcess != None or len(readyQueue) != 0 or len(ioQueue) != 0 or time < switchedOutTime):
+    while (
+        len(ordered) != 0
+        or currentProcess != None
+        or len(readyQueue) != 0
+        or len(ioQueue) != 0
+        or time < switchedOutTime
+    ):
         # If there is a current process running
         if currentProcess != None and time >= switchedOutTime + params.t_cs / 2:
             name = currentProcess.name
             tau = int(currentProcess.tau)
             current_burst_num = currentProcess.current_burst_num
             arrival_time = int(currentProcess.arrival_time)
-            if not started and time >= arrival_time + params.t_cs / 2 and time >= currentProcess.run_time:
+            if (
+                not started
+                and time >= arrival_time + params.t_cs / 2
+                and time >= currentProcess.run_time
+            ):
                 startTime = time
                 contextSwitch += 1
                 if currentProcess.startTime[current_burst_num] == 0:
                     currentProcess.startTime[current_burst_num] = time - params.t_cs / 2
                 started = True
-                msg = f"time {time}ms: Process {name} (tau {tau}ms) started using the CPU"
+                msg = (
+                    f"time {time}ms: Process {name} (tau {tau}ms) started using the CPU"
+                )
                 msg += f" for {currentProcess.burst_time[current_burst_num]}ms burst [Q"
                 msg += strReadyQueue(readyQueue)
                 if time <= 999:
@@ -54,7 +72,7 @@ def sjf(processes, params):
             completionTime = currentProcess.burst_time[current_burst_num] + startTime
             if not finished and time >= completionTime and started:
                 finished = True
-                currentProcess.endTime[current_burst_num] = time + params.t_cs /2
+                currentProcess.endTime[current_burst_num] = time + params.t_cs / 2
                 currentProcess.current_burst_num += 1
                 current_burst_num = currentProcess.current_burst_num
 
@@ -64,7 +82,7 @@ def sjf(processes, params):
                     msg += strReadyQueue(readyQueue)
                     print(msg)
                     # set to none and change times
-                    switchedOutTime = time + params.t_cs /2
+                    switchedOutTime = time + params.t_cs / 2
                     currentProcess = None
                 else:
                     msg = f"time {time}ms: Process {name} (tau {tau}ms) completed a CPU burst;"
@@ -78,7 +96,10 @@ def sjf(processes, params):
             if not recalculated and time >= completionTime and finished:
                 recalculated = True
                 alpha = params.alpha
-                currentProcess.tau = math.ceil( (alpha * currentProcess.burst_time[current_burst_num - 1]) + ((1 - alpha) * tau))
+                currentProcess.tau = math.ceil(
+                    (alpha * currentProcess.burst_time[current_burst_num - 1])
+                    + ((1 - alpha) * tau)
+                )
                 tau = currentProcess.tau
                 msg = f"time {time}ms: Recalculated tau = {tau}ms for process {name} [Q"
                 msg += strReadyQueue(readyQueue)
@@ -86,9 +107,15 @@ def sjf(processes, params):
                     print(msg)
             if not switched and time >= completionTime and recalculated:
                 switched = True
-                currentProcess.blocked_IO = int(currentProcess.IO_burst[current_burst_num - 1] + params.t_cs / 2 + time)
+                currentProcess.blocked_IO = int(
+                    currentProcess.IO_burst[current_burst_num - 1]
+                    + params.t_cs / 2
+                    + time
+                )
                 ioQueue.append(currentProcess)
-                msg = f"time {time}ms: Process {name} switching out of CPU; will block on"
+                msg = (
+                    f"time {time}ms: Process {name} switching out of CPU; will block on"
+                )
                 msg += f" I/O until time {int(currentProcess.blocked_IO)}ms [Q"
                 msg += strReadyQueue(readyQueue)
                 switchedOutTime = time + params.t_cs
@@ -101,21 +128,22 @@ def sjf(processes, params):
 
         # Any completed IO?
         if len(ioQueue) > 0:
-            ioQueueTmp = sorted(ioQueue, key=lambda x: x.name) # sort by name, so tie breaker
+            ioQueueTmp = sorted(
+                ioQueue, key=lambda x: x.name
+            )  # sort by name, so tie breaker
             for i in ioQueueTmp:
                 if time >= i.blocked_IO:
                     msg = f"time {time}ms: Process {i.name} (tau {int(i.tau)}ms) completed I/O; added"
                     msg += f" to ready queue [Q"
                     ioQueue.pop(ioQueue.index(i))
-                   
+
                     readyQueue.append(i)
                     i.start_wait = time
-                   
+
                     i.run_time = time + params.t_cs / 2
                     msg += strReadyQueue(readyQueue)
                     if time <= 999:
                         print(msg)
-                    
 
         # Any arriving processes?
         if len(ordered) > 0:
@@ -136,7 +164,7 @@ def sjf(processes, params):
         if currentProcess == None and time >= switchedOutTime:
             # if there is something, add
             if len(readyQueue) > 0:
-                readyQueue = sorted(readyQueue, key=lambda x: x.tau) # sort first
+                readyQueue = sorted(readyQueue, key=lambda x: x.tau)  # sort first
                 currentProcess = readyQueue[0]
                 # If a process has the same tau but comes first alphabetically, take it
                 for p in processes:
@@ -161,15 +189,27 @@ def sjf(processes, params):
     print(msg)
 
     # Complete stats
-    
+
     statistics["context_switches"] = contextSwitch
-    statistics["avg_wait"] = sum([i.wait_time for i in processes]) / sum([i.num_burst for i in processes])
-    statistics["avg_turnaround"] = round((sum([(sum(i.endTime) - sum(i.startTime)) for i in processes])/sum([len(i.burst_time) for i in processes])) + statistics["avg_wait"], 3)
-    statistics["avg_wait"] = round(sum([i.wait_time for i in processes]) / sum([i.num_burst for i in processes]),3)
+    statistics["avg_wait"] = sum([i.wait_time for i in processes]) / sum(
+        [i.num_burst for i in processes]
+    )
+    statistics["avg_turnaround"] = round(
+        (
+            sum([(sum(i.endTime) - sum(i.startTime)) for i in processes])
+            / sum([len(i.burst_time) for i in processes])
+        )
+        + statistics["avg_wait"],
+        3,
+    )
+    statistics["avg_wait"] = round(
+        sum([i.wait_time for i in processes]) / sum([i.num_burst for i in processes]), 3
+    )
     # Now round so that turnaround doesn't get rounding errors
-    #sum([i.wait_time / i.num_burst for i in processes]) / len(processes)
-    
+    # sum([i.wait_time / i.num_burst for i in processes]) / len(processes)
+
     return statistics
+
 
 # Order by tau then by name
 def order(queue):
@@ -188,7 +228,7 @@ def order(queue):
         final = final + current
         current.clear()
     return final
-        
+
 
 def strReadyQueue(readyQueue):
     msg = ""
@@ -200,10 +240,14 @@ def strReadyQueue(readyQueue):
         msg += "]"
     return msg
 
+
 def print_start(processes):
     for i in processes:
-        print(f"Process {i.name} [NEW] (arrival time {i.arrival_time} ms) {i.num_burst} CPU bursts (tau {i.tau:.0f}ms)") if i.num_burst > 1 else \
-            print(f"Process {i.name} [NEW] (arrival time {i.arrival_time} ms) {i.num_burst} CPU burst (tau {i.tau:.0f}ms)")
+        print(
+            f"Process {i.name} [NEW] (arrival time {i.arrival_time} ms) {i.num_burst} CPU bursts (tau {i.tau:.0f}ms)"
+        ) if i.num_burst > 1 else print(
+            f"Process {i.name} [NEW] (arrival time {i.arrival_time} ms) {i.num_burst} CPU burst (tau {i.tau:.0f}ms)"
+        )
     temp_queue = []
     for i in sorted(processes, key=lambda x: x.arrival_time):
         if i.arrival_time == 0:
@@ -231,7 +275,6 @@ if __name__ == "__main__":
         # alpha=0.5,
         # t_slice=128,
         # rr_add="END",
-
         # n=2,
         # seed=2,
         # lam=0.01,
@@ -240,7 +283,6 @@ if __name__ == "__main__":
         # alpha=0.5,
         # t_slice=128,
         # rr_add="END",
-
         # n=16,
         # seed=2,
         # lam=0.01,
@@ -249,7 +291,6 @@ if __name__ == "__main__":
         # alpha=0.75,
         # t_slice=64,
         # rr_add="END",
-
         n=8,
         seed=64,
         lam=0.001,

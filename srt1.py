@@ -32,6 +32,8 @@ def srt(processes, params):
     toBeAdded = []
     toBePreempted = None
     preemptTime = 0
+    contextSwitch = 0
+    preemptions = 0
     
     print_start(processes)
     while (len(ordered) != 0 or currentProcess != None or len(readyQueue) != 0 or len(ioQueue) != 0 or time < switchedOutTime):
@@ -40,18 +42,27 @@ def srt(processes, params):
         for i in toBeAddedTmp:
             if time >= i.run_time:
                 readyQueue.append(i)
+                i.start_wait = time
                 toBeAdded.remove(i)
 
         if toBePreempted != None and time == toBePreempted.run_time:
             readyQueue.append(currentProcess)
+            ############################################ May or may not have the params.t_cs / 2
+            currentProcess.start_wait = time - params.t_cs / 2
+            ###########################################
             currentProcess = toBePreempted
             readyQueue.remove(toBePreempted)
+            toBePreempted.wait_time += time - toBePreempted.start_wait
+            # I think it should be run_time - params.t_cs / 2
+            toBePreempted.wait_time += time - currentProcess.start_wait 
             toBePreempted = None
 
         # If there is a current process running
         if currentProcess != None and time >= switchedOutTime + params.t_cs / 2:
             if currentProcess in readyQueue and currentProcess.remove and currentProcess.run_time <= time:
                 readyQueue.remove(currentProcess)
+                ######################### Seems to have no effect
+                currentProcess.wait_time += time - currentProcess.start_wait
                 currentProcess.remove = False
 
             name = currentProcess.name
@@ -61,6 +72,7 @@ def srt(processes, params):
             if not started and time >= arrival_time + params.t_cs / 2 and time >= currentProcess.run_time:
                 startTime = time
                 started = True
+                contextSwitch += 1
                 elapsed = (currentProcess.tau - currentProcess.originalTau)
                 msg = f"time {time}ms: Process {name} (tau {tau}ms) started using the CPU"
                 msg += f" with {int(currentProcess.burst_time[current_burst_num] - elapsed)}ms burst remaining [Q"
@@ -117,6 +129,7 @@ def srt(processes, params):
 
         # if there is a process that needs to be preempted
         if toBePreempted != None and time >= preemptTime:
+            preemptions += 1
             msg = f"time {time}ms: Process {toBePreempted.name} (tau {int(toBePreempted.tau)}ms) will preempt "
             msg += f"{currentProcess.name} [Q"
             msg += strReadyQueue(readyQueue)
@@ -149,6 +162,7 @@ def srt(processes, params):
                     msg += f" to ready queue [Q"
                     ioQueue.pop(ioQueue.index(i))
                     readyQueue.append(i)
+                    i.start_wait = time
                     i.run_time = time + params.t_cs / 2
                     msg1 = strReadyQueue(readyQueue)
                     msg += msg1
@@ -174,6 +188,7 @@ def srt(processes, params):
                             toBeAdded.append(currentProcess)
                             currentProcess.run_time = time + params.t_cs / 2
 
+                            preemptions += 1
                             currentProcess = i
                             # reset
                             started = False
@@ -197,6 +212,7 @@ def srt(processes, params):
             for i in orderedTmp:
                 if i.arrival_time == time:
                     readyQueue.append(i)
+                    i.start_wait = time
                     msg = f"time {time}ms: Process {i.name} (tau {int(i.tau)}ms) arrived; added to "
                     msg += f"ready queue [Q"
                     msg += strReadyQueue(readyQueue)
@@ -220,6 +236,7 @@ def srt(processes, params):
                         currentProcess = p
                 index = readyQueue.index(currentProcess)
                 readyQueue.pop(index)
+                currentProcess.wait_time += time - currentProcess.start_wait
                 started = False
                 finished = False
                 recalculated = False
@@ -230,9 +247,16 @@ def srt(processes, params):
         if currentProcess != None and time >= switchedOutTime:
             if currentProcess in readyQueue and currentProcess.remove:
                 readyQueue.remove(currentProcess)
+                ###################### Seems to make it super small
+                #currentProcess.wait_time = time - currentProcess.start_wait
                 currentProcess.remove = False
 
         time += 1
+    
+    # Do statistics
+    statistics["context_switches"] = contextSwitch
+    statistics["preemptions"] = preemptions
+    statistics["avg_wait"] = sum([i.wait_time for i in processes]) / sum([i.num_burst for i in processes])
 
     msg = f"time {time}ms: Simulator ended for SRT [Q <empty>]"
     print(msg)
@@ -319,23 +343,23 @@ if __name__ == "__main__":
         # t_slice=128,
         # rr_add="END",
 
-        # n=16,
-        # seed=2,
-        # lam=0.01,
-        # upper_bound=256,
-        # t_cs=4,
-        # alpha=0.75,
-        # t_slice=64,
-        # rr_add="END",
-
-        n=8,
-        seed=64,
-        lam=0.001,
-        upper_bound=4096,
+        n=16,
+        seed=2,
+        lam=0.01,
+        upper_bound=256,
         t_cs=4,
-        alpha=0.5,
-        t_slice=2048,
+        alpha=0.75,
+        t_slice=64,
         rr_add="END",
+
+        # n=8,
+        # seed=64,
+        # lam=0.001,
+        # upper_bound=4096,
+        # t_cs=4,
+        # alpha=0.5,
+        # t_slice=2048,
+        # rr_add="END",
     )
     processes = []
     ran = Rand48(params.seed)
@@ -344,4 +368,4 @@ if __name__ == "__main__":
         processes.append(Process(chr(i + 65), params, ran))
 
     print_start(processes)
-    srt(processes, params)
+    print(srt(processes, params))
