@@ -6,6 +6,17 @@ import math
 
 
 def srt(processes, params):
+    statistics = {
+        "avg_burst": 0,
+        "avg_wait": 0,
+        "avg_turnaround": 0,
+        "context_switches": 0,
+        "preemptions": 0,
+        'avg_io_burst': 0
+    }
+    statistics["avg_burst"] = sum([sum(i.burst_time) for i in processes])/sum([len(i.burst_time) for i in processes])
+    statistics["avg_io_burst"] = sum([sum(i.IO_burst) for i in processes])/sum([len(i.IO_burst) for i in processes])
+
     readyQueue = []
     ioQueue = []
     ordered = sorted(processes, key=lambda x: x.arrival_time)
@@ -22,6 +33,7 @@ def srt(processes, params):
     toBePreempted = None
     preemptTime = 0
     
+    print_start(processes)
     while (len(ordered) != 0 or currentProcess != None or len(readyQueue) != 0 or len(ioQueue) != 0 or time < switchedOutTime):
         
         toBeAddedTmp = sorted(toBeAdded, key=lambda x: x.run_time)
@@ -53,7 +65,8 @@ def srt(processes, params):
                 msg = f"time {time}ms: Process {name} (tau {tau}ms) started using the CPU"
                 msg += f" with {int(currentProcess.burst_time[current_burst_num] - elapsed)}ms burst remaining [Q"
                 msg += strReadyQueue(readyQueue)
-                print(msg)
+                if time <= 999:
+                    print(msg)
                 completionTime = int(currentProcess.burst_time[current_burst_num] + startTime - elapsed)
             if started and not finished and time >= completionTime:
                 finished = True
@@ -75,7 +88,8 @@ def srt(processes, params):
                         msg += "s"
                     msg += f" to go [Q"
                     msg += strReadyQueue(readyQueue)
-                    print(msg)
+                    if time <= 999:
+                        print(msg)
             if started and not recalculated and time >= completionTime and finished:
                 recalculated = True
                 alpha = params.alpha
@@ -84,7 +98,8 @@ def srt(processes, params):
                 currentProcess.originalTau = tau
                 msg = f"time {time}ms: Recalculated tau = {tau}ms for process {name} [Q"
                 msg += strReadyQueue(readyQueue)
-                print(msg)
+                if time <= 999:
+                    print(msg)
             if started and not switched and time >= completionTime and recalculated:
                 switched = True
                 currentProcess.blocked_IO = int(currentProcess.IO_burst[current_burst_num - 1] + params.t_cs / 2 + time)
@@ -93,7 +108,8 @@ def srt(processes, params):
                 msg += f" I/O until time {int(currentProcess.blocked_IO)}ms [Q"
                 msg += strReadyQueue(readyQueue)
                 switchedOutTime = time + params.t_cs
-                print(msg)
+                if time <= 999:
+                    print(msg)
                 currentProcess = None
             if started and not switchedOut and time >= completionTime and switched:
                 switchedOut = True
@@ -104,7 +120,8 @@ def srt(processes, params):
             msg = f"time {time}ms: Process {toBePreempted.name} (tau {int(toBePreempted.tau)}ms) will preempt "
             msg += f"{currentProcess.name} [Q"
             msg += strReadyQueue(readyQueue)
-            print(msg)
+            if time <= 999:
+                print(msg)
             toBeAdded.append(currentProcess)
             currentProcess.run_time = time + params.t_cs / 2
             currentProcess = toBePreempted
@@ -171,7 +188,8 @@ def srt(processes, params):
                             i.run_time += params.t_cs / 2 # switch out current Process, switching in is already added
 
                             msg += msg1
-                    print(msg)
+                    if time <= 999:
+                        print(msg)
 
         # Any arriving processes?
         if len(ordered) > 0:
@@ -182,7 +200,8 @@ def srt(processes, params):
                     msg = f"time {time}ms: Process {i.name} (tau {int(i.tau)}ms) arrived; added to "
                     msg += f"ready queue [Q"
                     msg += strReadyQueue(readyQueue)
-                    print(msg)
+                    if time <= 999:
+                        print(msg)
                     i.run_time = time + params.t_cs / 2
                     ordered.pop(ordered.index(i))
 
@@ -217,6 +236,7 @@ def srt(processes, params):
 
     msg = f"time {time}ms: Simulator ended for SRT [Q <empty>]"
     print(msg)
+    return statistics
 
 # Order by tau then by name
 def order(queue):
