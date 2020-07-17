@@ -33,6 +33,7 @@ def srt(processes, params):
     toBePreempted = None
     preemptTime = 0
     
+    print_start(processes)
     while (len(ordered) != 0 or currentProcess != None or len(readyQueue) != 0 or len(ioQueue) != 0 or time < switchedOutTime):
         
         toBeAddedTmp = sorted(toBeAdded, key=lambda x: x.run_time)

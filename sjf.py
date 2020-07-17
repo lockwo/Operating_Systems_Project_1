@@ -31,7 +31,7 @@ def sjf(processes, params):
     startTime = 0
 
     contextSwitch = 0
-
+    print_start(processes)
     while (len(ordered) != 0 or currentProcess != None or len(readyQueue) != 0 or len(ioQueue) != 0 or time < switchedOutTime):
         # If there is a current process running
         if currentProcess != None and time >= switchedOutTime + params.t_cs / 2:
@@ -54,7 +54,7 @@ def sjf(processes, params):
             if not finished and time >= completionTime and started:
                 finished = True
                 currentProcess.endTime[current_burst_num] = time + params.t_cs /2
-                print("Turnaround time is " + str(time + (params.t_cs/2) - currentProcess.startTime[current_burst_num]))
+                # print("Turnaround time is " + str(time + (params.t_cs/2) - currentProcess.startTime[current_burst_num]))
                 currentProcess.current_burst_num += 1
                 current_burst_num = currentProcess.current_burst_num
 
@@ -212,9 +212,8 @@ def strReadyQueue(readyQueue):
 
 def print_start(processes):
     for i in processes:
-        print(
-            f"Process {i.name} [NEW] (arrival time {i.arrival_time} ms) {i.num_burst} CPU bursts (tau {int(i.tau)}ms)"
-        )
+        print(f"Process {i.name} [NEW] (arrival time {i.arrival_time} ms) {i.num_burst} CPU bursts (tau {i.tau:.0f}ms)") if i.num_burst > 1 else \
+            print(f"Process {i.name} [NEW] (arrival time {i.arrival_time} ms) {i.num_burst} CPU burst (tau {i.tau:.0f}ms)")
     temp_queue = []
     for i in sorted(processes, key=lambda x: x.arrival_time):
         if i.arrival_time == 0:

@@ -8,24 +8,27 @@ from srt1 import srt
 from sjf import sjf
 
 if __name__ == '__main__':
-    '''
+    
     if len(sys.argv) == 9:
         params = Params(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8])
     else:
         params = Params(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], "END")
-    '''
+    
     # TEST 2
-    params = Params(
-        n=1,
-        seed=2,
-        lam=0.01,
-        upper_bound=256,
-        t_cs=4,
-        alpha=0.5,
-        t_slice=128,
-        rr_add="END"
-    )
+    # sys.stdout = open("ourtest2.txt", 'w')
+    # params = Params(
+    #     n=1,
+    #     seed=2,
+    #     lam=0.01,
+    #     upper_bound=256,
+    #     t_cs=4,
+    #     alpha=0.5,
+    #     t_slice=128,
+    #     rr_add="END"
+    # )
+
     # TEST 3
+    # sys.stdout = open("ourtest3.txt", 'w')
     # params = Params(
     #     n=2,
     #     seed=2,
@@ -38,6 +41,7 @@ if __name__ == '__main__':
     # )
 
     # TEST 4
+    # sys.stdout = open("ourtest4.txt", 'w')
     # params = Params(
     #     n=16,
     #     seed=2,
@@ -50,6 +54,7 @@ if __name__ == '__main__':
     # )
 
     # TEST 5
+    # sys.stdout = open("ourtest5.txt", 'w')
     # params = Params(
     #     n=8,
     #     seed=64,
@@ -71,7 +76,7 @@ if __name__ == '__main__':
         processes.append(Process(chr(i + 65), params, ran))
 
     fcfs_stats = round_robin(processes=processes, params=params, FCFS=True)
-
+    print()
     '''
     Shortest Job First (SJF)
     '''
@@ -82,7 +87,7 @@ if __name__ == '__main__':
         processes.append(Process(chr(i + 65), params, ran))
 
     sjf_stats = sjf(processes=processes, params=params)
-
+    print()
     '''
     Shortest Remaining Time (SRT)
     '''
@@ -93,7 +98,7 @@ if __name__ == '__main__':
         processes.append(Process(chr(i + 65), params, ran))
 
     srt_stats = srt(processes=processes, params=params)
-
+    print()
     '''
     Round Robin (RR)
     '''
