@@ -30,6 +30,7 @@ class Process(object):
         self.blocking = False
         self.wait_time = 0
         self.originalTime = 0
+        self.originalTau = 1 / params.lam
 
     def activation(self, r, lam, ub):
         while 1:
