@@ -48,7 +48,8 @@ def sjf(processes, params):
                 msg = f"time {time}ms: Process {name} (tau {tau}ms) started using the CPU"
                 msg += f" for {currentProcess.burst_time[current_burst_num]}ms burst [Q"
                 msg += strReadyQueue(readyQueue)
-                print(msg)
+                if time <= 999:
+                    print(msg)
             completionTime = currentProcess.burst_time[current_burst_num] + startTime
             if not finished and time >= completionTime and started:
                 finished = True
@@ -72,7 +73,8 @@ def sjf(processes, params):
                         msg += "s"
                     msg += f" to go [Q"
                     msg += strReadyQueue(readyQueue)
-                    print(msg)
+                    if time <= 999:
+                        print(msg)
             if not recalculated and time >= completionTime and finished:
                 recalculated = True
                 alpha = params.alpha
@@ -81,7 +83,8 @@ def sjf(processes, params):
                 tau = currentProcess.tau
                 msg = f"time {time}ms: Recalculated tau = {tau}ms for process {name} [Q"
                 msg += strReadyQueue(readyQueue)
-                print(msg)
+                if time <= 999:
+                    print(msg)
             if not switched and time >= completionTime and recalculated:
                 switched = True
                 currentProcess.blocked_IO = int(currentProcess.IO_burst[current_burst_num - 1] + params.t_cs / 2 + time)
@@ -90,7 +93,8 @@ def sjf(processes, params):
                 msg += f" I/O until time {int(currentProcess.blocked_IO)}ms [Q"
                 msg += strReadyQueue(readyQueue)
                 switchedOutTime = time + params.t_cs
-                print(msg)
+                if time <= 999:
+                    print(msg)
                 currentProcess = None
             if not switchedOut and time >= completionTime and switched:
                 switchedOut = True
@@ -112,7 +116,8 @@ def sjf(processes, params):
                    
                     i.run_time = time + params.t_cs / 2
                     msg += strReadyQueue(readyQueue)
-                    print(msg)
+                    if time <= 999:
+                        print(msg)
                     
 
         # Any arriving processes?
@@ -127,7 +132,8 @@ def sjf(processes, params):
                     msg = f"time {time}ms: Process {i.name} (tau {int(i.tau)}ms) arrived; added to "
                     msg += f"ready queue [Q"
                     msg += strReadyQueue(readyQueue)
-                    print(msg)
+                    if time <= 999:
+                        print(msg)
                     i.run_time = time + params.t_cs / 2
                     ordered.pop(ordered.index(i))
 
