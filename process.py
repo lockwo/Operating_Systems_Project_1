@@ -22,10 +22,13 @@ class Process(object):
         self.run_time = 0
         self.total_run_time = 0
         self.current_run_time = 0
-        self.sliced = 0
         self.block_time = -1
         self.tau = 1 / params.lam
         self.done = False
+        self.turnaround = [0 for i in self.burst_time]
+        self.turnaround_num = 0
+        self.blocking = False
+        self.wait_time = 0
         self.originalTime = 0
 
     def activation(self, r, lam, ub):

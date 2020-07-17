@@ -7,6 +7,14 @@ import math
 
 
 def sjf(processes, params):
+    statistics = {
+        "avg_burst": 0,
+        "avg_wait": 0,
+        "avg_turnaround": 0,
+        "context_switches": 0,
+        "preemptions": 0
+    }
+    statistics["avg_burst"] = sum([sum(i.burst_time) for i in processes])/sum([len(i.burst_time) for i in processes])
     readyQueue = []
     ioQueue = []
     ordered = sorted(processes, key=lambda x: x.arrival_time)
@@ -132,6 +140,7 @@ def sjf(processes, params):
 
     msg = f"time {time}ms: Simulator ended for SJF [Q <empty>]"
     print(msg)
+    return statistics
 
 # Order by tau then by name
 def order(queue):
@@ -220,4 +229,4 @@ if __name__ == "__main__":
         processes.append(Process(chr(i + 65), params, ran))
 
     print_start(processes)
-    sjf(processes, params)
+    print(sjf(processes, params))
