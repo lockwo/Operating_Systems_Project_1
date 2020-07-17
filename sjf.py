@@ -14,7 +14,7 @@ def sjf(processes, params):
         "context_switches": 0,
         "preemptions": 0
     }
-    statistics["avg_burst"] = sum([sum(i.burst_time) for i in processes])/sum([len(i.burst_time) for i in processes])
+    statistics["avg_burst"] = round(sum([sum(i.burst_time) for i in processes])/sum([len(i.burst_time) for i in processes]),3)
     readyQueue = []
     ioQueue = []
     ordered = sorted(processes, key=lambda x: x.arrival_time)
@@ -107,6 +107,7 @@ def sjf(processes, params):
                    
                     readyQueue.append(i)
                     i.start_wait = time
+                    # print(i.name + " joining readyQueue at time " + str(time))
                    
                     i.run_time = time + params.t_cs / 2
                     msg += strReadyQueue(readyQueue)
@@ -143,8 +144,9 @@ def sjf(processes, params):
                         currentProcess = p
                 index = readyQueue.index(currentProcess)
                 readyQueue.pop(index)
-                # print(currentProcess.name + " add wait time " + str(time - currentProcess.start_wait))
-                # currentProcess.wait_time += time - currentProcess.start_wait
+                print(currentProcess.name + " exiting readyQueue at time " + str(time))
+                print(currentProcess.name + " add wait time " + str(time - currentProcess.start_wait))
+                currentProcess.wait_time += time - currentProcess.start_wait
 
                 started = False
                 finished = False
@@ -152,24 +154,23 @@ def sjf(processes, params):
                 switched = False
                 switchedOut = False
                 currentProcess.run_time = time + params.t_cs / 2
-        for i in readyQueue:
-            # if time == i.blocked_IO:
-            #     i.wait_time -= 1
-            # if time <= i.blocked_IO:
-            #     continue
-            i.wait_time += 1
+        # for i in readyQueue:
+        #     if time < switchedOutTime or time < i.run_time:
+        #         continue
+        #     i.wait_time += 1
         time += 1
 
     msg = f"time {time}ms: Simulator ended for SJF [Q <empty>]"
     print(msg)
 
     # Complete stats
-    statistics["avg_turnaround"] = sum([((sum(i.endTime) - sum(i.startTime)) / i.num_burst) for i in processes]) / len(processes)
+    
     statistics["context_switches"] = contextSwitch
-    statistics["avg_wait"] = sum([i.wait_time / i.num_burst for i in processes]) / len(processes)
-    #sum([(i.endTime - i.startTime) / i.num_burst) for i in processes]) / len(processes)
-    #sum([ ((sum(i.endTime) - sum(i.startTime)) / i.num_burst ) for i in processes])
-  #sum([ ((sum(i.endTime) - sum(i.startTime)) / len(i.endTime))  for i in processes]) #/ len(processes)
+    statistics["avg_wait"] = sum([i.wait_time for i in processes]) / sum([i.num_burst for i in processes])
+    statistics["avg_turnaround"] = round((sum([(sum(i.endTime) - sum(i.startTime)) for i in processes])/sum([len(i.burst_time) for i in processes])) + statistics["avg_wait"], 3)
+    statistics["avg_wait"] = round(sum([i.wait_time for i in processes]) / sum([i.num_burst for i in processes]),3)
+    # Now round so that turnaround doesn't get rounding errors
+    #sum([i.wait_time / i.num_burst for i in processes]) / len(processes)
     
     return statistics
 
@@ -226,16 +227,7 @@ def normal_round(n):
 
 if __name__ == "__main__":
     params = Params(
-        # n=1,
-        # seed=2,
-        # lam=0.01,
-        # upper_bound=256,
-        # t_cs=4,
-        # alpha=0.5,
-        # t_slice=128,
-        # rr_add="END",
-
-        n=2,
+        n=1,
         seed=2,
         lam=0.01,
         upper_bound=256,
@@ -244,6 +236,15 @@ if __name__ == "__main__":
         t_slice=128,
         rr_add="END",
 
+        # n=2,
+        # seed=2,
+        # lam=0.01,
+        # upper_bound=256,
+        # t_cs=4,
+        # alpha=0.5,
+        # t_slice=128,
+        # rr_add="END",
+
         # n=16,
         # seed=2,
         # lam=0.01,
@@ -251,6 +252,15 @@ if __name__ == "__main__":
         # t_cs=4,
         # alpha=0.75,
         # t_slice=64,
+        # rr_add="END",
+
+        # n=8,
+        # seed=64,
+        # lam=0.001,
+        # upper_bound=4096,
+        # t_cs=4,
+        # alpha=0.5,
+        # t_slice=2048,
         # rr_add="END",
     )
     processes = []
