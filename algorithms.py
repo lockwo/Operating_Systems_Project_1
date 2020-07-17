@@ -47,11 +47,12 @@ def round_robin(processes, params, FCFS):
     time = 0
     add_after_time_slice = [-1, None]
     queue_string = '<empty>' 
+    waiting_time = 0
     print(f'time {time}ms: Simulator started for RR [Q {queue_string}]') if not FCFS else print(f'time {time}ms: Simulator started for FCFS [Q {queue_string}]')
     blocking = []
     while len(ordered) != 0:
         for i in queue:
-            print(i, i.wait_time)
+            #print(i, i.wait_time)
             i.wait_time += 1
         #print(' '.join([i.name for i in queue]), cpu.switching, cpu.context_switch, cpu.next_process)
         for i in arrvied:
@@ -87,10 +88,11 @@ def round_robin(processes, params, FCFS):
                     cpu.current_process = process
                     queue_string = '<empty>' if len(queue) == 0 else ' '.join([i.name for i in queue])
                     total_bursts += 1
-                    if process.total_run_time != 0:
-                        print(f'time {time}ms: Process {process.name} started using the CPU with {process.burst_time[0] - process.total_run_time}ms burst remaining [Q {queue_string}]')
-                    else:
-                        print(f'time {time}ms: Process {process.name} started using the CPU for {process.burst_time[0]}ms burst [Q {queue_string}]')
+                    if time <= 999:
+                        if process.total_run_time != 0:
+                            print(f'time {time}ms: Process {process.name} started using the CPU with {process.burst_time[0] - process.total_run_time}ms burst remaining [Q {queue_string}]')
+                        else:
+                            print(f'time {time}ms: Process {process.name} started using the CPU for {process.burst_time[0]}ms burst [Q {queue_string}]')
         else:
             #print(cpu.current_process.current_run_time, cpu.current_process.total_run_time, time_slice)
             if cpu.current_process.total_run_time == cpu.current_process.burst_time[0] - 1:
@@ -101,12 +103,14 @@ def round_robin(processes, params, FCFS):
                     ordered.remove(cpu.current_process)
                     arrvied.remove(cpu.current_process)
                 else:
-                    if (len(cpu.current_process.burst_time)) == 1:
-                        print(f'time {time}ms: Process {cpu.current_process.name} completed a CPU burst; {len(cpu.current_process.burst_time)} burst to go [Q {queue_string}]')
-                    else:   
-                        print(f'time {time}ms: Process {cpu.current_process.name} completed a CPU burst; {len(cpu.current_process.burst_time)} bursts to go [Q {queue_string}]')
+                    if time <= 999:
+                        if (len(cpu.current_process.burst_time)) == 1:
+                            print(f'time {time}ms: Process {cpu.current_process.name} completed a CPU burst; {len(cpu.current_process.burst_time)} burst to go [Q {queue_string}]')
+                        else:   
+                            print(f'time {time}ms: Process {cpu.current_process.name} completed a CPU burst; {len(cpu.current_process.burst_time)} bursts to go [Q {queue_string}]')
                     b_time = time+cpu.current_process.IO_burst[0]+cpu.context_switch_remove
-                    print(f'time {time}ms: Process {cpu.current_process.name} switching out of CPU; will block on I/O until time {b_time}ms [Q {queue_string}]')
+                    if time <= 999:
+                        print(f'time {time}ms: Process {cpu.current_process.name} switching out of CPU; will block on I/O until time {b_time}ms [Q {queue_string}]')
                     cpu.current_process.block_time = b_time - time
                     blocking.append(cpu.current_process)
                     cpu.current_process.current_run_time = 0
@@ -125,9 +129,11 @@ def round_robin(processes, params, FCFS):
                 total_bursts += 1
                 if len(queue) == 0:
                     # This will probably break if the ready queue is filled while this is going on
-                    print(f'time {time}ms: Time slice expired; no preemption because ready queue is empty [Q {queue_string}]')
+                    if time <= 999:
+                        print(f'time {time}ms: Time slice expired; no preemption because ready queue is empty [Q {queue_string}]')
                 else:
-                    print(f'time {time}ms: Time slice expired; process {cpu.current_process.name} preempted with {cpu.current_process.burst_time[0] - cpu.current_process.total_run_time}ms to go [Q {queue_string}]')
+                    if time <= 999:
+                        print(f'time {time}ms: Time slice expired; process {cpu.current_process.name} preempted with {cpu.current_process.burst_time[0] - cpu.current_process.total_run_time}ms to go [Q {queue_string}]')
                     statistics["preemptions"] += 1
                     if cpu.context_switch == cpu.context_switch_total and len(queue) != 0:
                         cpu.context_switch = cpu.context_switch_total
@@ -167,7 +173,8 @@ def round_robin(processes, params, FCFS):
                     cpu.context_switch = cpu.context_switch_remove -1
                     cpu.next_process = queue.pop(0)
                 queue_string = '<empty>' if len(queue) == 0 else ' '.join([k.name for k in queue])
-                print(f'time {time}ms: Process {p.name} completed I/O; added to ready queue [Q {queue_string}]')
+                if time <= 999:
+                    print(f'time {time}ms: Process {p.name} completed I/O; added to ready queue [Q {queue_string}]')
                 p.turnaround_num += 1
                 p.blocking = False
                 
@@ -183,7 +190,8 @@ def round_robin(processes, params, FCFS):
                 else:
                     queue.insert(0, p)
                 q = ' '.join([i.name for i in queue])
-                print(f'time {time}ms: Process {p.name} arrived; added to ready queue [Q {q}]')
+                if time <= 999:
+                    print(f'time {time}ms: Process {p.name} arrived; added to ready queue [Q {q}]')
                 arrvied.append(p)  
 
         time += 1
@@ -191,6 +199,8 @@ def round_robin(processes, params, FCFS):
         #    break
     print(f'time {time+1}ms: Simulator ended for RR [Q <empty>]') if not FCFS else print(f'time {time+1}ms: Simulator ended for FCFS [Q <empty>]')
     statistics["avg_turnaround"] = sum([sum([j + cpu.context_switch_remove for j in i.turnaround]) for i in processes])/sum([len(i.turnaround) for i in processes])
-    statistics["avg_wait"] = sum([i.wait_time for i in processes])/total_bursts - 1
+    statistics["avg_wait"] = sum([sum([j for j in i.turnaround]) - i.total_burst_calc for i in processes])/sum([len(i.turnaround) for i in processes]) - 2
+    #statistics["avg_wait"] = (sum([i.wait_time for i in processes]))/sum([len(i.turnaround) for i in processes]) - 1
+    #print(sum([i.wait_time for i in processes]), total_bursts, sum([len(i.turnaround) for i in processes]), waiting_time)
     #print([i.turnaround for i in processes], b_times)
     return statistics
