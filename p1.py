@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
     # TEST 4
     # sys.stdout = open("rrbegin4.txt", 'w')
-    #params = Params(
+    # params = Params(
     #    n=16,
     #    seed=2,
     #    lam=0.01,
@@ -85,8 +85,8 @@ if __name__ == '__main__':
     #    t_cs=4,
     #    alpha=0.75,
     #    t_slice=64,
-    #    rr_add="BEGINNING"
-    #)
+    #    rr_add="END"
+    # )
 
     # TEST 5
     # sys.stdout = open("ourtest5.txt", 'w')
