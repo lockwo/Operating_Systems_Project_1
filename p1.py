@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 from process import Process
 from rand48 import Rand48
@@ -7,12 +8,20 @@ from algorithms import round_robin
 from srt1 import srt
 from sjf import sjf
 
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
+
 if __name__ == '__main__':
     
-    # if len(sys.argv) == 9:
-    #     params = Params(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8])
-    # else:
-    #     params = Params(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], "END")
+    if len(sys.argv) == 9:
+        params = Params(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8])
+    elif len(sys.argv) == 8:
+        params = Params(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], "END")
+    else:
+        eprint("Incorrect Arguments")
+        sys.exit()
     
     # TEST 2
     # sys.stdout = open("ourtest2.txt", 'w')
@@ -42,16 +51,16 @@ if __name__ == '__main__':
 
     # TEST 4
     # sys.stdout = open("rrbegin4.txt", 'w')
-    params = Params(
-        n=16,
-        seed=2,
-        lam=0.01,
-        upper_bound=256,
-        t_cs=4,
-        alpha=0.75,
-        t_slice=64,
-        rr_add="BEGINNING"
-    )
+    #params = Params(
+    #    n=16,
+    #    seed=2,
+    #    lam=0.01,
+    #    upper_bound=256,
+    #    t_cs=4,
+    #    alpha=0.75,
+    #    t_slice=64,
+    #    rr_add="BEGINNING"
+    #)
 
     # TEST 5
     # sys.stdout = open("ourtest5.txt", 'w')
@@ -110,4 +119,4 @@ if __name__ == '__main__':
 
     rr_stats = round_robin(processes=processes, params=params, FCFS=False)
 
-    # end(fcfs=fcfs_stats, sjf=sjf_stats, srt=srt_stats, rr=rr_stats)
+    end(fcfs=fcfs_stats, sjf=sjf_stats, srt=srt_stats, rr=rr_stats)
