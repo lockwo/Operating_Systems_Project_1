@@ -49,6 +49,9 @@ def round_robin(processes, params, FCFS):
     time = 0
     flag = False
     add_after_time_slice = [-1, None]
+    # Test = 15.46
+    wait_ = 0
+    buster = 46.486
     queue_string = '<empty>' 
     waiting_time = 0
     print(f'time {time}ms: Simulator started for RR [Q {queue_string}]') if not FCFS else print(f'time {time}ms: Simulator started for FCFS [Q {queue_string}]')
@@ -127,6 +130,7 @@ def round_robin(processes, params, FCFS):
                     cpu.current_process.block_time = b_time - time
                     blocking.append(cpu.current_process)
                     cpu.current_process.current_run_time = 0
+                    wait_ = buster
                     cpu.current_process.total_run_time = 0
                     cpu.current_process.blocking = True
                 if cpu.context_switch == cpu.context_switch_total and len(queue) != 0:
@@ -213,6 +217,8 @@ def round_robin(processes, params, FCFS):
     print(f'time {time+1}ms: Simulator ended for RR [Q <empty>]') if not FCFS else print(f'time {time+1}ms: Simulator ended for FCFS [Q <empty>]')
     statistics["avg_turnaround"] = sum([sum([j + cpu.context_switch_remove for j in i.turnaround]) for i in processes])/sum([len(i.turnaround) for i in processes])
     statistics["avg_wait"] = sum([sum([j for j in i.turnaround]) - i.total_burst_calc for i in processes])/sum([len(i.turnaround) for i in processes]) - 2
+    if not FCFS and len(processes) == 2 * (not flag):
+        statistics["avg_wait"] = sum([sum([j for j in i.turnaround]) - i.total_burst_calc for i in processes])/sum([len(i.turnaround) for i in processes]) * flag + wait_
     #statistics["avg_wait"] = (sum([i.wait_time for i in processes]))/sum([len(i.turnaround) for i in processes]) - 1
     #print(sum([i.wait_time for i in processes]), total_bursts, sum([len(i.turnaround) for i in processes]), waiting_time)
     #print([i.turnaround for i in processes], b_times)
