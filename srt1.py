@@ -42,17 +42,17 @@ def srt(processes, params):
         for i in toBeAddedTmp:
             if time >= i.run_time:
                 readyQueue.append(i)
-                i.start_wait = time
+           #     i.start_wait = time - params.t_cs / 2  ################
                 toBeAdded.remove(i)
 
         if toBePreempted != None and time == toBePreempted.run_time:
             readyQueue.append(currentProcess)
             ############################################ May or may not have the params.t_cs / 2
-            currentProcess.start_wait = time - params.t_cs / 2
+       #     currentProcess.start_wait = time - params.t_cs / 2
             ###########################################
             currentProcess = toBePreempted
             readyQueue.remove(toBePreempted)
-            toBePreempted.wait_time += time - toBePreempted.start_wait
+          #  toBePreempted.wait_time += time - toBePreempted.start_wait
             # I think it should be run_time - params.t_cs / 2
             toBePreempted = None
 
@@ -61,7 +61,7 @@ def srt(processes, params):
             if currentProcess in readyQueue and currentProcess.remove and currentProcess.run_time <= time:
                 readyQueue.remove(currentProcess)
                 ######################### Seems to have no effect
-                currentProcess.wait_time += time - currentProcess.start_wait
+       #         currentProcess.wait_time += time - currentProcess.start_wait
                 currentProcess.remove = False
 
             name = currentProcess.name
@@ -161,7 +161,7 @@ def srt(processes, params):
                     msg += f" to ready queue [Q"
                     ioQueue.pop(ioQueue.index(i))
                     readyQueue.append(i)
-                    i.start_wait = time
+              #      i.start_wait = time
                     i.run_time = time + params.t_cs / 2
                     msg1 = strReadyQueue(readyQueue)
                     msg += msg1
@@ -211,7 +211,7 @@ def srt(processes, params):
             for i in orderedTmp:
                 if i.arrival_time == time:
                     readyQueue.append(i)
-                    i.start_wait = time
+           #         i.start_wait = time
                     msg = f"time {time}ms: Process {i.name} (tau {int(i.tau)}ms) arrived; added to "
                     msg += f"ready queue [Q"
                     msg += strReadyQueue(readyQueue)
@@ -235,7 +235,7 @@ def srt(processes, params):
                         currentProcess = p
                 index = readyQueue.index(currentProcess)
                 readyQueue.pop(index)
-                currentProcess.wait_time += time - currentProcess.start_wait
+         #       currentProcess.wait_time += time - currentProcess.start_wait
                 started = False
                 finished = False
                 recalculated = False
@@ -250,6 +250,9 @@ def srt(processes, params):
                 #currentProcess.wait_time = time - currentProcess.start_wait
                 currentProcess.remove = False
 
+        for i in processes:
+            if i in readyQueue:
+                i.wait_time += 1
         time += 1
     
     # Do statistics
@@ -345,23 +348,23 @@ if __name__ == "__main__":
         # t_slice=128,
         # rr_add="END",
 
-        n=16,
-        seed=2,
-        lam=0.01,
-        upper_bound=256,
-        t_cs=4,
-        alpha=0.75,
-        t_slice=64,
-        rr_add="END",
-
-        # n=8,
-        # seed=64,
-        # lam=0.001,
-        # upper_bound=4096,
+        # n=16,
+        # seed=2,
+        # lam=0.01,
+        # upper_bound=256,
         # t_cs=4,
-        # alpha=0.5,
-        # t_slice=2048,
+        # alpha=0.75,
+        # t_slice=64,
         # rr_add="END",
+
+        n=8,
+        seed=64,
+        lam=0.001,
+        upper_bound=4096,
+        t_cs=4,
+        alpha=0.5,
+        t_slice=2048,
+        rr_add="END",
     )
     processes = []
     ran = Rand48(params.seed)
