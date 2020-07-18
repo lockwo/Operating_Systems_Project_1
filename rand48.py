@@ -1,6 +1,5 @@
 # From https://stackoverflow.com/questions/7287014/is-there-any-drand48-equivalent-in-python-or-a-wrapper-to-it
 from __future__ import division
-import math
 
 class Rand48(object):
     def __init__(self, seed):
