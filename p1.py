@@ -29,10 +29,10 @@ def check_args():
         if not isinstance(int(sys.argv[5]), int) and int(sys.argv[5]) % 2 != 0:
             print(f'ERROR: <{sys.argv[5]} isn\'t a valid context switch>', file=sys.stderr)
             sys.exit()
-        if not isinstance(float(sys.argv[6]), float):
+        if not isinstance(float(sys.argv[6]), float) or (float(sys.argv[3]) <= 0 or float(sys.argv[3]) > 1):
             print(f'ERROR: <{sys.argv[6]} isn\'t a valid alpha>', file=sys.stderr)
             sys.exit()
-        if not isinstance(int(sys.argv[7]), int):
+        if not isinstance(int(sys.argv[7]), int) or int(sys.argv[7]) < 0:
             print(f'ERROR: <{sys.argv[7]} isn\'t a valid time slice>', file=sys.stderr)
             sys.exit()
     except ValueError as e:
