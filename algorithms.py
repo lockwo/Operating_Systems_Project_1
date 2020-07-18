@@ -15,7 +15,7 @@ class CPU(object):
 
     def __str__(self):
         ret = "Running time "+ str(self.running_time)+ " Current process "+str(self.current_process)+" Contact switch total "+str(self.context_switch_total)+ \
-            " Contact Switch "+ str(self.context_switch)+ " Half "+ str(self.context_switch_remove) + " Switching " + str(self.switching)
+            " Contact Switch "+ str(self.context_switch)+ " Half "+ str(self.context_switch_remove) + " Switching " + str(self.switching) + " Next process " + str(self.next_process)
         return ret
 
 # NEED ADD BEGINNING OR END
@@ -54,12 +54,18 @@ def round_robin(processes, params, FCFS):
     print(f'time {time}ms: Simulator started for RR [Q {queue_string}]') if not FCFS else print(f'time {time}ms: Simulator started for FCFS [Q {queue_string}]')
     blocking = []
     while len(ordered) != 0:
-        if time > 50690:
-            #print(cpu, queue, ordered)
-            pass
         for i in queue:
-            #print(i, i.wait_time)
+            #print("queue", i.name, i.wait_time)
             i.wait_time += 1
+        #print("ordered", [i.name for i in ordered], cpu)
+        #if time > 17490 and time < 17510:
+        #    print(time)
+        #    for i in queue:
+        #        print("queue", i.name, i.wait_time)
+        #    print("ordered", [i.name for i in ordered], cpu)
+        
+        #if time > 17600:
+        #    input()
         #print(' '.join([i.name for i in queue]), cpu.switching, cpu.context_switch, cpu.next_process)
         for i in arrvied:
             if not i.blocking:
@@ -127,7 +133,7 @@ def round_robin(processes, params, FCFS):
                     cpu.context_switch = cpu.context_switch_total
                     statistics["context_switches"] += 1
                     cpu.switching = True
-                cpu.current_process = None
+                cpu.current_process = False
             elif cpu.current_process.current_run_time + 1 >= time_slice:
                 #print(queue, time)
                 queue_string = '<empty>' if len(queue) == 0 else ' '.join([i.name for i in queue])
@@ -147,12 +153,12 @@ def round_robin(processes, params, FCFS):
                         cpu.switching = True
                         statistics["context_switches"] += 1
                         add_after_time_slice = [1, cpu.current_process]
-                    cpu.current_process = None
+                    cpu.current_process = False 
             else:
                 cpu.current_process.current_run_time += 1
                 cpu.current_process.total_run_time += 1
 
-        if cpu.switching and len(queue) != 0 and cpu.current_process is None and cpu.context_switch == 1:  
+        if cpu.switching and len(queue) != 0 and not cpu.next_process and cpu.context_switch == 1:  
             cpu.next_process = queue.pop(0)
 
         if len(blocking) != 0:
@@ -210,4 +216,5 @@ def round_robin(processes, params, FCFS):
     #statistics["avg_wait"] = (sum([i.wait_time for i in processes]))/sum([len(i.turnaround) for i in processes]) - 1
     #print(sum([i.wait_time for i in processes]), total_bursts, sum([len(i.turnaround) for i in processes]), waiting_time)
     #print([i.turnaround for i in processes], b_times)
+    #input()
     return statistics
