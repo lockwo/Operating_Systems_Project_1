@@ -12,9 +12,35 @@ from sjf import sjf
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
+def check_args():
+    try:
+        if not isinstance(int(sys.argv[1]), int) or (int(sys.argv[1]) < 0 or int(sys.argv[1]) > 26):
+            print(f'ERROR: <{sys.argv[1]} isn\'t a valid n value>', file=sys.stderr)
+            sys.exit()
+        if not isinstance(int(sys.argv[2]), int):
+            print(f'ERROR: <{sys.argv[2]} isn\'t a valid seed>', file=sys.stderr)
+            sys.exit()
+        if not isinstance(float(sys.argv[3]), float) or (float(sys.argv[3]) <= 0 or float(sys.argv[3]) > 1):
+            print(f'ERROR: <{sys.argv[3]} isn\'t a valid lambda value>', file=sys.stderr)
+            sys.exit()
+        if not isinstance(int(sys.argv[4]), int) or int(sys.argv[4]) < 0:
+            print(f'ERROR: <{sys.argv[4]} isn\'t a valid upper bound>', file=sys.stderr)
+            sys.exit()
+        if not isinstance(int(sys.argv[5]), int) and int(sys.argv[5]) % 2 != 0:
+            print(f'ERROR: <{sys.argv[5]} isn\'t a valid context switch>', file=sys.stderr)
+            sys.exit()
+        if not isinstance(float(sys.argv[6]), float):
+            print(f'ERROR: <{sys.argv[6]} isn\'t a valid alpha>', file=sys.stderr)
+            sys.exit()
+        if not isinstance(int(sys.argv[7]), int):
+            print(f'ERROR: <{sys.argv[7]} isn\'t a valid time slice>', file=sys.stderr)
+            sys.exit()
+    except ValueError as e:
+        print(f'ERROR: <{e}>', file=sys.stderr)
+        sys.exit()
 
 if __name__ == '__main__':
-    
+    check_args()
     if len(sys.argv) == 9:
         params = Params(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8])
     elif len(sys.argv) == 8:
