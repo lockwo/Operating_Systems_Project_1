@@ -54,7 +54,6 @@ def srt(processes, params):
             readyQueue.remove(toBePreempted)
             toBePreempted.wait_time += time - toBePreempted.start_wait
             # I think it should be run_time - params.t_cs / 2
-            toBePreempted.wait_time += time - currentProcess.start_wait 
             toBePreempted = None
 
         # If there is a current process running
@@ -254,9 +253,12 @@ def srt(processes, params):
         time += 1
     
     # Do statistics
+    total_bursts = sum([i.num_burst for i in processes])
     statistics["context_switches"] = contextSwitch
     statistics["preemptions"] = preemptions
     statistics["avg_wait"] = sum([i.wait_time for i in processes]) / sum([i.num_burst for i in processes])
+    preemptDifference = (params.t_cs * preemptions) / total_bursts
+    statistics["avg_turnaround"] = round(params.t_cs + preemptDifference + statistics["avg_burst"] + statistics["avg_wait"], 3)
 
     msg = f"time {time}ms: Simulator ended for SRT [Q <empty>]"
     print(msg)
